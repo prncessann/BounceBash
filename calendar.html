@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Availability Calendar – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="styles.html">Styles</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Featured</a>
+    <a href="calendar.html" class="active">Calendar</a>
+    <a href="booking.html">Booking</a>
+  </nav>
+  <a href="booking.html" class="btn btn-dark">Book Now</a>
+</header>
+
+<section class="page-header">
+  <p class="eyebrow">Available | Pending | Booked</p>
+  <h1>Availability Calendar</h1>
+  <p class="lead">Showing availability for your chosen style. Pick a date, then continue to the booking form.</p>
+</section>
+<section class="cal-layout pt-40">
+  <div class="card">
+    <div class="calendar-header">
+      <button type="button" class="btn-icon">&lt;</button>
+      <strong>October 2026</strong>
+      <button type="button" class="btn-icon">&gt;</button>
+    </div>
+    <table class="calendar">
+      <thead><tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
+      <tbody>
+          <tr><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="day available"><span class="num">1</span><span class="lbl">Available</span></td><td class="day available"><span class="num">2</span><span class="lbl">Available</span></td><td class="day pending"><span class="num">3</span><span class="lbl">Pending</span></td></tr>
+          <tr><td class="day available"><span class="num">4</span><span class="lbl">Available</span></td><td class="day booked"><span class="num">5</span><span class="lbl">Booked</span></td><td class="day available"><span class="num">6</span><span class="lbl">Available</span></td><td class="day available"><span class="num">7</span><span class="lbl">Available</span></td><td class="day pending"><span class="num">8</span><span class="lbl">Pending</span></td><td class="day available"><span class="num">9</span><span class="lbl">Available</span></td><td class="day booked"><span class="num">10</span><span class="lbl">Booked</span></td></tr>
+          <tr><td class="day available"><span class="num">11</span><span class="lbl">Available</span></td><td class="day available"><span class="num">12</span><span class="lbl">Available</span></td><td class="day pending"><span class="num">13</span><span class="lbl">Pending</span></td><td class="day available"><span class="num">14</span><span class="lbl">Available</span></td><td class="day booked"><span class="num">15</span><span class="lbl">Booked</span></td><td class="day available"><span class="num">16</span><span class="lbl">Available</span></td><td class="day available"><span class="num">17</span><span class="lbl">Available</span></td></tr>
+          <tr><td class="day pending"><span class="num">18</span><span class="lbl">Pending</span></td><td class="day available"><span class="num">19</span><span class="lbl">Available</span></td><td class="day booked"><span class="num">20</span><span class="lbl">Booked</span></td><td class="day available"><span class="num">21</span><span class="lbl">Available</span></td><td class="day available"><span class="num">22</span><span class="lbl">Available</span></td><td class="day pending"><span class="num">23</span><span class="lbl">Pending</span></td><td class="day available selected"><span class="num">24</span><span class="lbl">Available</span></td></tr>
+          <tr><td class="day booked"><span class="num">25</span><span class="lbl">Booked</span></td><td class="day available"><span class="num">26</span><span class="lbl">Available</span></td><td class="day available"><span class="num">27</span><span class="lbl">Available</span></td><td class="day pending"><span class="num">28</span><span class="lbl">Pending</span></td><td class="day available"><span class="num">29</span><span class="lbl">Available</span></td><td class="day booked"><span class="num">30</span><span class="lbl">Booked</span></td><td class="day available"><span class="num">31</span><span class="lbl">Available</span></td></tr>
+      </tbody>
+    </table>
+    <div class="legend">
+      <span><span class="dot available"></span> Available</span>
+      <span><span class="dot pending"></span> Pending</span>
+      <span><span class="dot booked"></span> Booked</span>
+    </div>
+    <p class="muted small mt-12">Pending dates are awaiting a reservation fee and may reopen.</p>
+  </div>
+  <div class="cal-side">
+    <div class="style-chip">
+      <span class="swatch-thumb"></span>
+      <div><p class="small muted m-0">Your style</p><strong>Rainbow Racer Slide</strong></div>
+      <a href="styles.html" class="small ml-auto small">Change</a>
+    </div>
+    <div class="selected-card">
+      <p class="eyebrow eyebrow eyebrow-gold">Selected date</p>
+      <h2>Saturday, October 24</h2>
+      <span class="tag aesthetic">Available</span>
+      <p class="mt-12">Your chosen style is open on this date. Add-ons are selected in the booking form.</p>
+      <a href="booking.html" class="btn btn-gold btn-block">Book This Date</a>
+    </div>
+    <div class="card">
+      <h3>Good to know</h3>
+      <ul class="good-list">
+        <li>A 50% reservation fee secures your date.</li>
+        <li>Delivery and setup are included in every package.</li>
+        <li>Add-ons are selected in the booking form.</li>
+        <li>Need a date that looks full? Message us and we will check.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <h2>Ready to add a little more bounce?</h2>
+  <p>Check your date, pick a package and reserve with a 50% down payment.</p>
+  <div class="button-row center">
+    <a href="booking.html" class="btn btn-gold">Book Now</a>
+    <a href="calendar.html" class="btn btn-light">Check Availability</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
+    <div class="social-row">
+      <a href="#" class="social" aria-label="Instagram">IG</a>
+      <a href="#" class="social" aria-label="Facebook">FB</a>
+      <a href="#" class="social" aria-label="TikTok">TT</a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h4>Explore</h4>
+    <a href="index.html">Home</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Blog</a>
+    <a href="calendar.html">Calendar</a>
+  </div>
+  <div class="footer-col">
+    <h4>Help</h4>
+    <a href="booking.html">Booking / Inquiry</a>
+    <a href="calendar.html">Check Availability</a>
+    <a href="faq.html">FAQ</a>
+    <a href="feedback.html">Testimonials</a>
+    <a href="index.html#about">About Us</a>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <!-- sample number, replace with real contact -->
+    <p>+63 917 456 768</p>
+    <p>hello@bouncebashph.com</p>
+    <p>Metro Manila, PH</p>
+  </div>
+  <div class="footer-bottom">
+    <p>(c) 2026 Bounce Bash PH. All rights reserved.</p>
+    <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

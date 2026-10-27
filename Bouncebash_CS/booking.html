@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Your Party – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="styles.html">Styles</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Featured</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="booking.html" class="active">Booking</a>
+  </nav>
+  <a href="account.html" class="btn btn-outline">My Account</a>
+  <a href="booking.html" class="btn btn-dark">Book Now</a>
+</header>
+
+<section class="page-header">
+  <p class="eyebrow">Booking form | Check availability</p>
+  <h1>Book Your Party</h1>
+  <p class="lead">Send your reservation request and check if your date is open. We will confirm within 24 hours.</p>
+</section>
+<section class="booking-layout pt-40">
+  <div class="booking-form card">
+    <h2>Reservation details</h2>
+    <form id="booking-form">
+      <div class="field"><label for="name">Name</label><input type="text" id="name" placeholder="Full name" autocomplete="name" readonly></div>
+      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" placeholder="09XX XXX XXXX" autocomplete="tel" readonly></div>
+      <div class="grid-two">
+        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date" name="eventDate" required></div>
+        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time" name="eventTime" required></div>
+      </div>
+      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" name="venue" placeholder="Full address of the event venue" minlength="5" maxlength="500" required></div>
+      <div class="grid-two">
+        <div class="field"><label for="package">Selected rental / package</label>
+          <select id="package" name="packageId" required><option value="">Choose a package</option></select></div>
+        <div class="field"><label for="model">Inflatable style / model</label>
+          <select id="model" name="modelId" required><option value="">Choose a style</option></select></div>
+      </div>
+      <div class="field"><label for="children">Number of children</label><input type="number" id="children" name="childrenCount" min="1" max="1000" placeholder="e.g. 10" required></div>
+      <fieldset class="addons">
+        <legend>Add-ons</legend>
+        <div id="booking-addons">Loading add-ons...</div>
+      </fieldset>
+      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="5" maxlength="2000" placeholder="Theme, color preferences, special requests..."></textarea></div>
+      <label class="checkbox-line"><input type="checkbox" required> I understand that a 50% reservation fee is required to secure my date.</label>
+      <p id="booking-message" class="muted small" role="status" aria-live="polite"></p>
+      <button type="submit" class="btn btn-dark btn-block">Submit Booking Request</button>
+    </form>
+    <p class="muted small">Your details are only used to process your booking. We will contact you by phone or message to confirm.</p>
+  </div>
+  <aside class="booking-side">
+    <div class="card">
+      <h2>Check availability</h2>
+      <div class="calendar-header">
+        <button type="button" class="btn-icon">&lt;</button>
+        <strong>October 2026</strong>
+        <button type="button" class="btn-icon">&gt;</button>
+      </div>
+      <table class="calendar">
+        <thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead>
+        <tbody>
+          <tr><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="day available">1</td><td class="day available">2</td><td class="day pending">3</td></tr>
+          <tr><td class="day available">4</td><td class="day booked">5</td><td class="day available">6</td><td class="day available">7</td><td class="day pending">8</td><td class="day available">9</td><td class="day booked">10</td></tr>
+          <tr><td class="day available">11</td><td class="day available">12</td><td class="day pending">13</td><td class="day available">14</td><td class="day booked">15</td><td class="day available">16</td><td class="day available">17</td></tr>
+          <tr><td class="day pending">18</td><td class="day available">19</td><td class="day booked">20</td><td class="day available">21</td><td class="day available">22</td><td class="day pending">23</td><td class="day available">24</td></tr>
+          <tr><td class="day booked">25</td><td class="day available">26</td><td class="day available">27</td><td class="day pending">28</td><td class="day available">29</td><td class="day booked">30</td><td class="day available">31</td></tr>
+        </tbody>
+      </table>
+      <div class="legend">
+        <span><span class="dot available"></span> Available</span>
+        <span><span class="dot pending"></span> Pending</span>
+        <span><span class="dot booked"></span> Booked</span>
+      </div>
+      <p class="muted small">Pick a date, then continue the form on the left.</p>
+    </div>
+    <div class="card hoverable">
+      <h2>How booking works</h2>
+      <ol class="good-list good-list list-decimal">
+        <li><strong>Choose</strong>: pick a package and your add-ons</li>
+        <li><strong>Submit</strong>: send the reservation request form</li>
+        <li><strong>Reserve</strong>: pay the 50% reservation fee</li>
+        <li><strong>Celebrate</strong>: we deliver, set up and supervise</li>
+      </ol>
+    </div>
+    <div class="card hoverable">
+      <h2>Have questions first?</h2>
+      <p>Delivery charges, down payment and setup/pick-up are covered in our FAQ.</p>
+      <a href="faq.html" class="btn btn-outline">Read FAQ</a>
+    </div>
+  </aside>
+</section>
+
+<section class="cta-band">
+  <h2>Ready to add a little more bounce?</h2>
+  <p>Check your date, pick a package and reserve with a 50% down payment.</p>
+  <div class="button-row center">
+    <a href="booking.html" class="btn btn-gold">Book Now</a>
+    <a href="calendar.html" class="btn btn-light">Check Availability</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
+    <div class="social-row">
+      <a href="#" class="social" aria-label="Instagram">IG</a>
+      <a href="#" class="social" aria-label="Facebook">FB</a>
+      <a href="#" class="social" aria-label="TikTok">TT</a>
+    </div>
+  </div>
+  <div class="footer-col">
+    <h4>Explore</h4>
+    <a href="index.html">Home</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Blog</a>
+    <a href="calendar.html">Calendar</a>
+  </div>
+  <div class="footer-col">
+    <h4>Help</h4>
+    <a href="booking.html">Booking / Inquiry</a>
+    <a href="calendar.html">Check Availability</a>
+    <a href="faq.html">FAQ</a>
+    <a href="feedback.html">Testimonials</a>
+    <a href="index.html#about">About Us</a>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <!-- sample number, replace with real contact -->
+    <p>+63 917 456 768</p>
+    <p>hello@bouncebashph.com</p>
+    <p>Metro Manila, PH</p>
+  </div>
+  <div class="footer-bottom">
+    <p>(c) 2026 Bounce Bash PH. All rights reserved.</p>
+    <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+  </div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

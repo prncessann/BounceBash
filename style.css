@@ -326,7 +326,7 @@ textarea.big { min-height: 120px; }
 /* ---------- Forms ---------- */
 .field { margin-bottom: 16px; }
 .field label, fieldset legend { display: block; margin-bottom: 6px; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mocha); }
-input[type="text"], input[type="tel"], input[type="date"], input[type="time"], input[type="number"], input[type="search"], input[type="email"], select, textarea {
+input[type="text"], input[type="tel"], input[type="date"], input[type="time"], input[type="number"], input[type="search"], input[type="email"], input[type="password"], select, textarea {
   width: 100%; padding: 11px 14px; font-family: var(--sans); font-size: 0.95rem; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 10px;
 }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); border-color: var(--gold); }

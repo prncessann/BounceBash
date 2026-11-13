@@ -17,9 +17,12 @@
     <a href="gallery.html">Gallery</a>
     <a href="blog.html">Featured</a>
     <a href="calendar.html">Calendar</a>
-    <a href="booking.html">Booking</a>
   </nav>
-  <a href="booking.html" class="btn btn-dark">Book Now</a>
+  <div class="header-actions">
+    <a href="#login" class="auth-link">Log in</a>
+    <a href="#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
 </header>
 
 <section class="hero">
@@ -28,20 +31,7 @@
     <h1>Every celebration deserves a little <em>more bounce.</em></h1>
     <p class="lead">Elegant bounce houses, splash zones and ball pits for kids' parties, school events and family celebrations. Delivered, set up and supervised for you.</p>
     <div class="button-row">
-      <a href="booking.html" class="btn btn-dark">Book Your Party</a>
-      <a href="#packages" class="btn btn-outline">View Packages</a>
-    </div>
-    <div class="pill-row">
-      <span class="pill">50% reservation fee</span>
-      <span class="pill">Delivery &amp; setup</span>
-      <span class="pill">On-site supervision</span>
-    </div>
-  </div>
-  <div class="hero-visual">
-    <a href="booking.html"><img src="assets/photos/bounce-house-balloon-arch-ballpit.jpg" alt="Bounce house with balloon arch" class="round-photo"></a>
-    <div class="floating-card">
-      <strong>Now booking</strong>
-      <span>Check open dates today</span>
+      <a href="booking.html" class="btn btn-book">Book Your Party</a>
     </div>
   </div>
 </section>
@@ -64,16 +54,51 @@
 
 <section class="find-date" id="find-date">
   <div class="cal-layout">
-    <div>
+    <div class="find-date-text">
       <p class="eyebrow">Find your perfect date</p>
       <h2>Check open dates</h2>
-      <p class="lead">Green dates are available. Pick a date, then choose your style and continue to booking.</p>
+      <p class="lead">Pick an open date for your party.</p>
       <div class="button-row">
         <a href="calendar.html" class="btn btn-dark">View full calendar</a>
       </div>
     </div>
-    <div class="card">
+    <div class="card mini-cal-card">
       <p class="muted small">October 2026</p>
+      <div class="mini-cal">
+        <span class="mini-dow">S</span><span class="mini-dow">M</span><span class="mini-dow">T</span><span class="mini-dow">W</span><span class="mini-dow">T</span><span class="mini-dow">F</span><span class="mini-dow">S</span>
+        <span class="mini-day empty"></span><span class="mini-day empty"></span><span class="mini-day empty"></span><span class="mini-day empty"></span>
+        <span class="mini-day available">1</span>
+        <span class="mini-day available">2</span>
+        <span class="mini-day pending">3</span>
+        <span class="mini-day available">4</span>
+        <span class="mini-day booked">5</span>
+        <span class="mini-day available">6</span>
+        <span class="mini-day available">7</span>
+        <span class="mini-day pending">8</span>
+        <span class="mini-day available">9</span>
+        <span class="mini-day booked">10</span>
+        <span class="mini-day available">11</span>
+        <span class="mini-day available">12</span>
+        <span class="mini-day pending">13</span>
+        <span class="mini-day available">14</span>
+        <span class="mini-day booked">15</span>
+        <span class="mini-day available">16</span>
+        <span class="mini-day available">17</span>
+        <span class="mini-day pending">18</span>
+        <span class="mini-day available">19</span>
+        <span class="mini-day booked">20</span>
+        <span class="mini-day available">21</span>
+        <span class="mini-day available">22</span>
+        <span class="mini-day pending">23</span>
+        <span class="mini-day available">24</span>
+        <span class="mini-day booked">25</span>
+        <span class="mini-day available">26</span>
+        <span class="mini-day available">27</span>
+        <span class="mini-day pending">28</span>
+        <span class="mini-day available">29</span>
+        <span class="mini-day booked">30</span>
+        <span class="mini-day available">31</span>
+      </div>
       <div class="legend">
         <span><span class="dot available"></span> Available</span>
         <span><span class="dot pending"></span> Pending</span>
@@ -86,42 +111,49 @@
 <section class="packages" id="packages">
   <p class="eyebrow center">Packages</p>
   <h2 class="center">Featured rental packages</h2>
-  <div class="card-grid grid-four">
-    <div class="package-card">
-      
-      <a href="packages.html"><img src="assets/photos/castle-bounce-cake-table.jpg" alt="Little Bounce package"></a>
-      <h3>Little Bounce</h3>
-      <!-- sample price, replace with confirmed rate -->
-      <p class="price">PHP 4,500</p>
-      <p class="muted">A single bounce house for a smaller celebration.</p>
-      <a href="packages.html" class="btn btn-outline">View Package</a>
+
+  <div class="pkg-tier">
+    <div class="pkg-tier-title">Bounce &amp; Play</div>
+    <div class="card-grid grid-three">
+      <div class="package-card" data-package-id="little-bounce">
+        <a href="packages.html"><img src="assets/photos/castle-bounce-cake-table.jpg" alt="Little Bounce package"></a>
+        <h3>Little Bounce</h3>
+        <!-- sample price, replace with confirmed rate -->
+        <p class="price">PHP 4,500</p>
+        <p class="muted">A single bounce house for a smaller celebration.</p>
+        <a href="packages.html" class="btn btn-outline">View Package</a>
+      </div>
+      <div class="package-card" data-package-id="ball-pit-bash">
+        <a href="packages.html"><img src="assets/photos/kids-in-ball-pit-pastel.jpg" alt="Ball Pit Bash package"></a>
+        <h3>Ball Pit Bash</h3>
+        <!-- sample price, replace with confirmed rate -->
+        <p class="price">PHP 5,500</p>
+        <p class="muted">A ball pit for toddlers and little ones to play in.</p>
+        <a href="packages.html" class="btn btn-outline">View Package</a>
+      </div>
+      <div class="package-card" data-package-id="bash-and-bounce">
+        <a href="packages.html"><img src="assets/photos/bounce-house-garden-kids.jpg" alt="Bash &amp; Bounce package"></a>
+        <h3>Bash &amp; Bounce</h3>
+        <!-- sample price, replace with confirmed rate -->
+        <p class="price">PHP 8,500</p>
+        <p class="muted">A bounce house and ball pit together for a fuller party.</p>
+        <a href="packages.html" class="btn btn-outline">View Package</a>
+      </div>
     </div>
-    <div class="package-card">
-      
-      <a href="packages.html"><img src="assets/photos/kids-in-ball-pit-pastel.jpg" alt="Ball Pit Bash package"></a>
-      <h3>Ball Pit Bash</h3>
-      <!-- sample price, replace with confirmed rate -->
-      <p class="price">PHP 5,500</p>
-      <p class="muted">A ball pit for toddlers and little ones to play in.</p>
-      <a href="packages.html" class="btn btn-outline">View Package</a>
-    </div>
-    <div class="package-card">
-      
-      <a href="packages.html"><img src="assets/photos/bounce-house-garden-kids.jpg" alt="Bash &amp; Bounce package"></a>
-      <h3>Bash &amp; Bounce</h3>
-      <!-- sample price, replace with confirmed rate -->
-      <p class="price">PHP 8,500</p>
-      <p class="muted">A bounce house and ball pit together for a fuller party.</p>
-      <a href="packages.html" class="btn btn-outline">View Package</a>
-    </div>
-    <div class="package-card featured">
-      <span class="tag">Most Luxe</span>
-      <a href="packages.html"><img src="assets/photos/balloon-arch-outdoor-lounge.jpg" alt="The Luxe Bash package"></a>
-      <h3>The Luxe Bash</h3>
-      <!-- sample price, replace with confirmed rate -->
-      <p class="price">PHP 12,500</p>
-      <p class="muted">Our most complete setup, with balloon décor included.</p>
-      <a href="packages.html" class="btn btn-outline">View Package</a>
+  </div>
+
+  <div class="pkg-tier">
+    <div class="pkg-tier-title">Premium</div>
+    <div class="card-grid grid-one">
+      <div class="package-card featured" data-package-id="the-luxe-bash">
+        <span class="tag">Most Luxe</span>
+        <a href="packages.html"><img src="assets/photos/balloon-arch-outdoor-lounge.jpg" alt="The Luxe Bash package"></a>
+        <h3>The Luxe Bash</h3>
+        <!-- sample price, replace with confirmed rate -->
+        <p class="price">PHP 12,500</p>
+        <p class="muted">Our most complete setup, with balloon décor included.</p>
+        <a href="packages.html" class="btn btn-outline">View Package</a>
+      </div>
     </div>
   </div>
 </section>
@@ -193,10 +225,16 @@
     <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-      <a href="#" class="social" aria-label="Instagram">IG</a>
-      <a href="#" class="social" aria-label="Facebook">FB</a>
-      <a href="#" class="social" aria-label="TikTok">TT</a>
-    </div>
+    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
+      <img src="assets/logo/instagram.png" alt="Instagram">
+    </a>
+    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
+      <img src="assets/logo/facebook.png" alt="Facebook">
+    </a>
+    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
+      <img src="assets/logo/tiktok.png" alt="TikTok">
+    </a>
+  </div>
   </div>
   <div class="footer-col">
     <h4>Explore</h4>
@@ -228,5 +266,54 @@
   </div>
 </footer>
 
+<!-- Login popup -->
+<div class="modal" id="login">
+  <a href="#" class="modal-backdrop" aria-label="Close"></a>
+  <div class="modal-card">
+    <a href="#" class="modal-close" aria-label="Close">&times;</a>
+    <p class="eyebrow center">Welcome back</p>
+    <h2 class="center">Log in</h2>
+    <form action="#">
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" name="email" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="password" required>
+      </div>
+      <button type="submit" class="btn btn-book btn-block">Log in</button>
+    </form>
+    <p class="switch">Don't have an account? <a href="#signup">Sign up</a></p>
+  </div>
+</div>
+
+<!-- Sign up popup -->
+<div class="modal" id="signup">
+  <a href="#" class="modal-backdrop" aria-label="Close"></a>
+  <div class="modal-card">
+    <a href="#" class="modal-close" aria-label="Close">&times;</a>
+    <p class="eyebrow center">Join us</p>
+    <h2 class="center">Create account</h2>
+    <form action="#">
+      <div class="field">
+        <label for="signup-name">Full name</label>
+        <input type="text" id="signup-name" name="name" required>
+      </div>
+      <div class="field">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" name="email" required>
+      </div>
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" name="password" minlength="8" required>
+      </div>
+      <button type="submit" class="btn btn-book btn-block">Sign up</button>
+    </form>
+    <p class="switch">Already have an account? <a href="#login">Log in</a></p>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
 </body>
 </html>

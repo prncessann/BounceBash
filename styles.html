@@ -17,9 +17,12 @@
     <a href="gallery.html">Gallery</a>
     <a href="blog.html">Featured</a>
     <a href="calendar.html">Calendar</a>
-    <a href="booking.html">Booking</a>
   </nav>
-  <a href="booking.html" class="btn btn-dark">Book Now</a>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
 </header>
 
 <section class="page-header">
@@ -28,13 +31,18 @@
   <p class="lead">Pick the look for your Dry Zone setup: soft and aesthetic, or bright and colorful. Next, check which dates are open for your pick.</p>
 </section>
 <section>
+  <input type="radio" name="style-filter" id="f-all" class="filter-radio" checked>
+  <input type="radio" name="style-filter" id="f-aesthetic" class="filter-radio">
+  <input type="radio" name="style-filter" id="f-colorful" class="filter-radio">
+
   <div class="filter-pills">
-    <a href="styles.html" class="btn btn-dark">All styles</a>
-    <a href="styles.html" class="btn btn-outline">Aesthetic</a>
-    <a href="styles.html" class="btn btn-outline">Colorful</a>
+    <label for="f-all" class="btn">All styles</label>
+    <label for="f-aesthetic" class="btn">Aesthetic</label>
+    <label for="f-colorful" class="btn">Colorful</label>
   </div>
+
   <div class="card-grid grid-four">
-    <div class="style-card">
+    <div class="style-card" data-style="aesthetic">
       <span class="tag aesthetic">Aesthetic</span>
       <img src="assets/photos/castle-bounce-cake-table.jpg" alt="Classic White Castle">
       <h3>Classic White Castle</h3>
@@ -43,7 +51,7 @@
       <p class="price">From PHP X,XXX</p>
       <a href="booking.html" class="btn btn-dark btn-block">Choose this style</a>
     </div>
-    <div class="style-card">
+    <div class="style-card" data-style="aesthetic">
       <span class="tag aesthetic">Aesthetic</span>
       <img src="assets/photos/child-playing-cream-bounce-house.jpg" alt="Boho Pastel Playground">
       <h3>Boho Pastel Playground</h3>
@@ -52,7 +60,7 @@
       <p class="price">From PHP X,XXX</p>
       <a href="booking.html" class="btn btn-dark btn-block">Choose this style</a>
     </div>
-    <div class="style-card">
+    <div class="style-card" data-style="colorful">
       <span class="tag colorful">Colorful</span>
       <img src="assets/photos/kids-splash-slide-palm-trees.jpg" alt="Rainbow Racer Slide">
       <h3>Rainbow Racer Slide</h3>
@@ -61,7 +69,7 @@
       <p class="price">From PHP X,XXX</p>
       <a href="booking.html" class="btn btn-dark btn-block">Choose this style</a>
     </div>
-    <div class="style-card">
+    <div class="style-card" data-style="colorful">
       <span class="tag colorful">Colorful</span>
       <img src="assets/photos/bounce-house-garden-kids.jpg" alt="Carnival Pop Castle">
       <h3>Carnival Pop Castle</h3>
@@ -88,10 +96,16 @@
     <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-      <a href="#" class="social" aria-label="Instagram">IG</a>
-      <a href="#" class="social" aria-label="Facebook">FB</a>
-      <a href="#" class="social" aria-label="TikTok">TT</a>
-    </div>
+    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
+      <img src="assets/logo/instagram.png" alt="Instagram">
+    </a>
+    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
+      <img src="assets/logo/facebook.png" alt="Facebook">
+    </a>
+    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
+      <img src="assets/logo/tiktok.png" alt="TikTok">
+    </a>
+  </div>
   </div>
   <div class="footer-col">
     <h4>Explore</h4>
@@ -122,6 +136,7 @@
     <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
   </div>
 </footer>
+
 
 </body>
 </html>

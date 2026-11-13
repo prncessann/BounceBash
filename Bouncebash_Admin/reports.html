@@ -4,7 +4,13 @@
 <title>Reports – Bounce Bash PH Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
-</head><body>
+<style>
+  .chips .chip{cursor:pointer;user-select:none}
+  .chips .chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .rpt-fade{transition:opacity .15s ease}
+  .rpt-fade.out{opacity:.35}
+</style>
+</head><body class="rpt">
 <div class="app">
 <aside><a href="index.html"><img class="logo-img" src="assets/logo-full.png" alt="Bounce Bash"></a><div class="sub">ADMIN PANEL</div>
 <nav>
@@ -18,8 +24,224 @@
 </nav>
 <div class="who"><span class="av">A</span><span>Admin<br><span class="mu">View website</span></span></div></aside>
 <main>
-<div class="top"><div><h1>Reports</h1><p class="desc">Revenue, payments, packages and customer feedback in one view.</p></div><div class="acts"></div></div><div class="chips"><span class="chip">This month</span><span class="chip">Last 3 months</span><span class="chip on">Last 6 months</span><span class="chip">This year</span></div><div class="grid g4"><div class="card stat"><div class="l">Total revenue</div><div class="v">PHP 1,284,500</div><div class="s">16% vs previous 6 months</div></div><div class="card stat"><div class="l">Total bookings</div><div class="v">138</div><div class="s">12 vs previous 6 months</div></div><div class="card stat"><div class="l">Avg. booking value</div><div class="v">PHP 9,300</div><div class="s">PHP 400 higher</div></div><div class="card stat"><div class="l">Collection rate</div><div class="v">76%</div><div class="s">PHP 148,000 outstanding</div></div></div><div class="grid g2" style="margin-top:12px"><div class="card"><h2>Revenue by month</h2><div class="cols"><div><span>150k</span><i style="height:50%"></i><span>May</span></div><div><span>175k</span><i style="height:58.333333333333336%"></i><span>Jun</span></div><div><span>190k</span><i style="height:63.333333333333336%"></i><span>Jul</span></div><div><span>230k</span><i style="height:76.66666666666667%"></i><span>Aug</span></div><div><span>260k</span><i style="height:86.66666666666667%"></i><span>Sep</span></div><div><span>300k</span><i style="height:100%;background:var(--ink)"></i><span>Oct</span></div></div></div><div class="card"><h2>Payment breakdown</h2><div class="bar hl" style="margin:12px 0"><i style="width:18%;background:var(--red)"></i><i style="width:32%;background:var(--gold)"></i><i style="width:50%;background:var(--grn)"></i></div><div class="row"><span class="pill p2">Paid in full</span><span>69 bookings</span></div><div class="row"><span class="pill p1">Downpayment paid</span><span>44 bookings</span></div><div class="row"><span class="pill p0">Not paid</span><span>25 bookings</span></div></div></div>
-<div class="grid g3" style="margin-top:12px"><div class="card"><h3>Bookings by package</h3><div class="row"><span>Little Bounce</span><b>26</b></div><div class="bar"><i style="width:57.2%;background:var(--gold)"></i></div><div class="row"><span>Ball Pit Bash</span><b>35</b></div><div class="bar"><i style="width:77%;background:var(--gold)"></i></div><div class="row"><span>Bash & Bounce</span><b>41</b></div><div class="bar"><i style="width:90.2%;background:var(--gold)"></i></div><div class="row"><span>The Luxe Bash</span><b>36</b></div><div class="bar"><i style="width:79.2%;background:var(--gold)"></i></div></div><div class="card"><h3>Top add-ons</h3><div class="row"><span>1. Ball colors</span><span class="mu">64 orders</span></div><div class="row"><span>2. Balloon garland</span><span class="mu">38 orders</span></div><div class="row"><span>3. Balloon arch</span><span class="mu">35 orders</span></div><div class="row"><span>4. Table styling</span><span class="mu">24 orders</span></div><div class="row"><span>5. Backdrop &amp; signage</span><span class="mu">22 orders</span></div></div><div class="card"><h3>Feedback &amp; blog</h3><div class="row"><span>Average rating</span><b>4.9 / 5</b></div><div class="row"><span>New reviews (6 mo)</span><b>47</b></div><div class="row"><span>Pending approval</span><b>3</b></div><div class="row"><span>Top post</span><b>Choosing the right inflatable</b></div></div></div>
+<div class="print-only"><img class="logo-img" src="assets/logo-full.png" alt="Bounce Bash"><h1>Sales &amp; Payments Report</h1><p class="desc" id="printPeriod">Period: This month (November 1 to 13, 2026)</p></div>
+<div class="top"><div><h1>Reports</h1><p class="desc">Revenue, payments, packages and customer feedback in one view.</p></div><div class="acts"><span class="sync"><i></i>Synced 1 min ago</span><button type="button" class="btn dark" onclick="window.print()">Generate PDF</button></div></div>
+
+<div class="chips" id="chips" role="group" aria-label="Report period">
+  <span class="chip" role="button" tabindex="0" data-period="today" aria-pressed="false">Today</span>
+  <span class="chip on" role="button" tabindex="0" data-period="month" aria-pressed="true">This month</span>
+  <span class="chip" role="button" tabindex="0" data-period="year" aria-pressed="false">This year</span>
+</div>
+
+<div id="report" class="rpt-fade">
+<div class="grid g4">
+  <div class="card stat"><div class="l">Total revenue</div><div class="v" id="sRev"></div><div class="s" id="sRevD"></div></div>
+  <div class="card stat"><div class="l">Total bookings</div><div class="v" id="sBook"></div><div class="s" id="sBookD"></div></div>
+  <div class="card stat"><div class="l">Avg. booking value</div><div class="v" id="sAvg"></div><div class="s" id="sAvgD"></div></div>
+  <div class="card stat"><div class="l">Collection rate</div><div class="v" id="sRate"></div><div class="s" id="sOut"></div></div>
+</div>
+
+<div class="grid g2" style="margin-top:12px">
+  <div class="card">
+    <div class="row" style="padding:0;align-items:center"><h2 id="chartTitle">Revenue by month</h2><span class="pill p2" id="chartPill"></span></div>
+    <p class="desc" id="chartDesc"></p>
+    <div id="chartWrap"></div>
+  </div>
+  <div class="card">
+    <h2>Payment breakdown</h2>
+    <div class="bar hl" style="margin:12px 0" id="payBar"></div>
+    <div class="row"><span class="pill p2">Paid in full</span><span id="payPaid"></span></div>
+    <div class="row"><span class="pill p1">Downpayment paid</span><span id="payDown"></span></div>
+    <div class="row"><span class="pill p0">Not paid</span><span id="payNone"></span></div>
+  </div>
+</div>
+
+<div class="grid g3" style="margin-top:12px">
+  <div class="card"><h3>Bookings by package</h3><div id="pkgList"></div></div>
+  <div class="card"><h3>Top add-ons</h3><div id="addonList"></div></div>
+  <div class="card"><h3>Feedback &amp; blog</h3>
+    <div class="row"><span>Average rating</span><b id="fbRating"></b></div>
+    <div class="row"><span id="fbNewLabel">New reviews</span><b id="fbNew"></b></div>
+    <div class="row"><span>Pending approval</span><b id="fbPending"></b></div>
+    <div class="row"><span>Top post</span><b id="fbTop"></b></div>
+  </div>
+</div>
+</div>
 </main></div>
 
+<script>
+/* ------------------------------------------------------------------
+   REPORT DATA PER PERIOD
+   All figures below are SAMPLE numbers so the buttons work – replace them with
+   real numbers from your database / API when you have them.
+------------------------------------------------------------------- */
+var PACKAGES = ['Little Bounce', 'Ball Pit Bash', 'Bash & Bounce', 'The Luxe Bash'];
+var ADDONS   = ['Ball colors', 'Balloon garland', 'Balloon arch', 'Table styling', 'Backdrop & signage'];
+
+var DATA = {
+  'today': {
+    printLabel: 'Today (November 13, 2026)',
+    revenue: 38500, revenueD: '12% vs yesterday',
+    bookings: 4,    bookingsD: '1 more than yesterday',
+    avg: 9625,      avgD: 'PHP 200 higher',
+    rate: 75,       outstanding: 9500,
+    chartTitle: 'Revenue today',
+    chartPill: '\u25B2 Peak at 3 PM',
+    chartDesc: 'Payments received so far today, Friday, November 13.',
+    labels: ['9 AM', '11 AM', '1 PM', '3 PM', '5 PM'],
+    values: [2.5, 6, 8.5, 12, 9.5], max: 15,
+    pay: [2, 1, 1],
+    packages: [1, 1, 1, 1],
+    addons: [3, 2, 2, 1, 1],
+    ratingAvg: '4.9 / 5', newLabel: 'New reviews (today)', newReviews: 1, pending: 0,
+    topPost: 'Choosing the right inflatable'
+  },
+  'month': {
+    printLabel: 'This month (November 1 to 13, 2026)',
+    revenue: 134000, revenueD: '3% vs last month',
+    bookings: 14,    bookingsD: '1 vs last month',
+    avg: 9570,       avgD: 'PHP 150 higher',
+    rate: 72,        outstanding: 37500,
+    chartTitle: 'Revenue this month',
+    chartPill: '\u25B2 Sales up 37% since the start of the month',
+    chartDesc: 'Revenue for November so far, rising each week.',
+    labels: ['Nov 1-4', 'Nov 5-8', 'Nov 9-13'],
+    values: [38, 44, 52], max: 60,
+    pay: [7, 4, 3],
+    packages: [3, 4, 4, 3],
+    addons: [7, 4, 4, 3, 2],
+    ratingAvg: '4.9 / 5', newLabel: 'New reviews (this month)', newReviews: 5, pending: 2,
+    topPost: 'Choosing the right inflatable'
+  },
+  'year': {
+    printLabel: 'This year (January 1 to November 13, 2026)',
+    revenue: 1889000, revenueD: '22% vs last year',
+    bookings: 210,    bookingsD: '27 vs last year',
+    avg: 8995,        avgD: 'PHP 250 higher',
+    rate: 74,         outstanding: 267500,
+    chartTitle: 'Revenue this year',
+    chartPill: '\u25B2 Sales up 233% since January',
+    chartDesc: 'Revenue grew every month from January to October. November is partial (to the 13th).',
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+    values: [90, 105, 120, 135, 150, 175, 190, 230, 260, 300, 134], max: 300,
+    pay: [101, 67, 42],
+    packages: [41, 54, 62, 53],
+    addons: [98, 58, 54, 38, 33],
+    ratingAvg: '4.9 / 5', newLabel: 'New reviews (this year)', newReviews: 71, pending: 2,
+    topPost: 'Choosing the right inflatable'
+  }
+};
+
+/* ---------------- helpers ---------------- */
+function $(id) { return document.getElementById(id); }
+function php(n) { return 'PHP ' + Number(n).toLocaleString('en-US'); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+function buildChart(d) {
+  var x0 = 70, x1 = 520, yBase = 190, yTop = 30.6, H = yBase - yTop;
+  var n = d.values.length, max = d.max, step = max / 3;
+  var svg = '';
+
+  // grid lines + y labels
+  for (var g = 0; g <= 3; g++) {
+    var gv = step * g, gy = (yBase - (gv / max) * H).toFixed(1);
+    svg += '<line x1="48" x2="540" y1="' + gy + '" y2="' + gy + '" style="stroke:var(--line)" stroke-width="1"/>' +
+           '<text x="40" y="' + (parseFloat(gy) + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" style="fill:var(--mute)">' +
+           (gv === 0 ? '0' : Math.round(gv) + 'k') + '</text>';
+  }
+
+  // points
+  var pts = d.values.map(function (v, i) {
+    return { x: (x0 + i * (x1 - x0) / (n - 1)), y: yBase - (v / max) * H, v: v, l: d.labels[i] };
+  });
+  var line = pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+  svg += '<polygon points="' + x0 + ',' + yBase + ' ' + line + ' ' + x1 + ',' + yBase + '" style="fill:var(--gold)" opacity=".16"/>';
+  svg += '<polyline points="' + line + '" fill="none" style="stroke:var(--gold)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+
+  pts.forEach(function (p, i) {
+    var last = i === n - 1;
+    svg += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="' + (last ? 5 : 4) + '" style="fill:' +
+           (last ? 'var(--ink)' : 'var(--gold)') + ';stroke:var(--card)" stroke-width="2"/>' +
+           '<text x="' + p.x.toFixed(1) + '" y="' + (i > 0 && p.v < pts[i-1].v ? p.y + 20 : p.y - 11).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--ink)">' + p.v + 'k</text>' +
+           '<text x="' + p.x.toFixed(1) + '" y="212" text-anchor="middle" font-size="11" style="fill:var(--mute)">' + esc(p.l) + '</text>';
+  });
+
+  return '<svg viewBox="0 0 560 228" role="img" aria-label="Line chart: ' + esc(d.chartTitle) +
+         '" style="width:100%;height:auto;display:block;margin-top:10px">' + svg + '</svg>';
+}
+
+function render(key) {
+  var d = DATA[key];
+
+  // stats
+  $('sRev').textContent = php(d.revenue);       $('sRevD').textContent = d.revenueD;
+  $('sBook').textContent = d.bookings;          $('sBookD').textContent = d.bookingsD;
+  $('sAvg').textContent = php(d.avg);           $('sAvgD').textContent = d.avgD;
+  $('sRate').textContent = d.rate + '%';        $('sOut').textContent = php(d.outstanding) + ' outstanding';
+  $('printPeriod').textContent = 'Period: ' + d.printLabel;
+
+  // chart
+  $('chartTitle').textContent = d.chartTitle;
+  $('chartPill').innerHTML = d.chartPill;
+  $('chartDesc').textContent = d.chartDesc;
+  $('chartWrap').innerHTML = buildChart(d);
+
+  // payment breakdown (bar order: not paid, downpayment, paid)
+  var total = d.pay[0] + d.pay[1] + d.pay[2];
+  var pct = function (v) { return (v / total * 100).toFixed(1) + '%'; };
+  $('payBar').innerHTML =
+    '<i style="width:' + pct(d.pay[2]) + ';background:var(--red)"></i>' +
+    '<i style="width:' + pct(d.pay[1]) + ';background:var(--amb)"></i>' +
+    '<i style="width:' + pct(d.pay[0]) + ';background:var(--grn)"></i>';
+  $('payPaid').textContent = d.pay[0] + ' bookings';
+  $('payDown').textContent = d.pay[1] + ' bookings';
+  $('payNone').textContent = d.pay[2] + ' bookings';
+
+  // packages
+  var pmax = Math.max.apply(null, d.packages);
+  $('pkgList').innerHTML = PACKAGES.map(function (name, i) {
+    return '<div class="row"><span>' + esc(name) + '</span><b>' + d.packages[i] + '</b></div>' +
+           '<div class="bar"><i style="width:' + (d.packages[i] / pmax * 90).toFixed(1) + '%;background:var(--gold)"></i></div>';
+  }).join('');
+
+  // add-ons
+  $('addonList').innerHTML = ADDONS.map(function (name, i) {
+    return '<div class="row"><span>' + (i + 1) + '. ' + esc(name) + '</span><span class="mu">' + d.addons[i] + ' orders</span></div>';
+  }).join('');
+
+  // feedback
+  $('fbRating').textContent = d.ratingAvg;
+  $('fbNewLabel').textContent = d.newLabel;
+  $('fbNew').textContent = d.newReviews;
+  $('fbPending').textContent = d.pending;
+  $('fbTop').textContent = d.topPost;
+}
+
+/* ---------------- chip clicks ---------------- */
+var chips = document.querySelectorAll('#chips .chip');
+var wrap = $('report');
+
+function selectPeriod(chip) {
+  chips.forEach(function (c) {
+    var on = c === chip;
+    c.classList.toggle('on', on);
+    c.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  wrap.classList.add('out');
+  setTimeout(function () {
+    render(chip.getAttribute('data-period'));
+    wrap.classList.remove('out');
+  }, 120);
+}
+
+chips.forEach(function (chip) {
+  chip.addEventListener('click', function () { selectPeriod(chip); });
+  chip.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPeriod(chip); }
+  });
+});
+
+// initial render (This month)
+render('month');
+</script>
 </body></html>

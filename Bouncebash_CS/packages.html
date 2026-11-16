@@ -8,7 +8,7 @@
 </head>
 <body>
 <header class="site-header">
-  <a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
     <a href="styles.html">Styles</a>
@@ -17,9 +17,12 @@
     <a href="gallery.html">Gallery</a>
     <a href="blog.html">Featured</a>
     <a href="calendar.html">Calendar</a>
-    <a href="booking.html">Booking</a>
   </nav>
-  <a href="booking.html" class="btn btn-dark">Book Now</a>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
 </header>
 
 <section class="page-header">
@@ -29,8 +32,8 @@
 </section>
 <section>
   <div class="card-grid grid-four mt-0">
-    <div class="package-card" data-package-id="little-bounce">
-      <a href="booking.html?package=little-bounce"><img src="assets/photos/castle-bounce-cake-table.jpg" alt="Little Bounce package"></a>
+    <div class="package-card">
+      <a href="booking.html"><img src="../assets/photos/castle-bounce-cake-table.jpg" alt="Little Bounce package"></a>
       <h3>Little Bounce</h3>
       <!-- sample price, replace with confirmed rate -->
       <p class="price">PHP 4,500</p>
@@ -40,10 +43,10 @@
         <li>Delivery and setup</li>
         <li>Rental hours as listed</li>
       </ul>
-      <a href="booking.html?package=little-bounce" class="btn btn-outline">View Package</a>
+      <a href="booking.html" class="btn btn-outline">View Package</a>
     </div>
-    <div class="package-card" data-package-id="ball-pit-bash">
-      <a href="booking.html?package=ball-pit-bash"><img src="assets/photos/kids-in-ball-pit-pastel.jpg" alt="Ball Pit Bash package"></a>
+    <div class="package-card">
+      <a href="booking.html"><img src="../assets/photos/kids-in-ball-pit-pastel.jpg" alt="Ball Pit Bash package"></a>
       <h3>Ball Pit Bash</h3>
       <!-- sample price, replace with confirmed rate -->
       <p class="price">PHP 5,500</p>
@@ -53,10 +56,10 @@
         <li>Delivery and setup</li>
         <li>Rental hours as listed</li>
       </ul>
-      <a href="booking.html?package=ball-pit-bash" class="btn btn-outline">View Package</a>
+      <a href="booking.html" class="btn btn-outline">View Package</a>
     </div>
-    <div class="package-card" data-package-id="bash-and-bounce">
-      <a href="booking.html?package=bash-and-bounce"><img src="assets/photos/bounce-house-garden-kids.jpg" alt="Bash &amp; Bounce package"></a>
+    <div class="package-card">
+      <a href="booking.html"><img src="../assets/photos/bounce-house-garden-kids.jpg" alt="Bash &amp; Bounce package"></a>
       <h3>Bash &amp; Bounce</h3>
       <!-- sample price, replace with confirmed rate -->
       <p class="price">PHP 8,500</p>
@@ -66,10 +69,10 @@
         <li>Delivery and setup</li>
         <li>Rental hours as listed</li>
       </ul>
-      <a href="booking.html?package=bash-and-bounce" class="btn btn-outline">View Package</a>
+      <a href="booking.html" class="btn btn-outline">View Package</a>
     </div>
-    <div class="package-card" data-package-id="the-luxe-bash">
-      <a href="booking.html?package=the-luxe-bash"><img src="assets/photos/balloon-arch-outdoor-lounge.jpg" alt="The Luxe Bash package"></a>
+    <div class="package-card">
+      <a href="booking.html"><img src="../assets/photos/balloon-arch-outdoor-lounge.jpg" alt="The Luxe Bash package"></a>
       <h3>The Luxe Bash</h3>
       <!-- sample price, replace with confirmed rate -->
       <p class="price">PHP 12,500</p>
@@ -79,10 +82,9 @@
         <li>Balloon décor included</li>
         <li>Delivery and setup</li>
       </ul>
-      <a href="booking.html?package=the-luxe-bash" class="btn btn-outline">View Package</a>
+      <a href="booking.html" class="btn btn-outline">View Package</a>
     </div>
   </div>
-  <div class="button-row center"><a href="rentals.html" class="btn btn-outline">Browse the play zones</a></div>
 </section>
 <section class="how-it-works card hoverable">
   <h2>How the reservation works</h2>
@@ -92,15 +94,15 @@
 <section class="compare">
   <h2>Compare packages</h2>
   <table class="data-table">
-    <thead><tr><th>Feature</th><th>Little Bounce</th><th>Ball Pit Bash</th><th>Bash &amp; Bounce</th><th>The Luxe Bash</th></tr></thead>
-    <tbody>
-      <tr><td>Bounce house</td><td>Included</td><td>—</td><td>Included</td><td>Included</td></tr>
-      <tr><td>Ball pit</td><td>—</td><td>Included</td><td>Included</td><td>Included</td></tr>
-      <tr><td>Delivery and setup</td><td>Included</td><td>Included</td><td>Included</td><td>Included</td></tr>
-      <tr><td>On-site supervision</td><td>Included</td><td>Included</td><td>Included</td><td>Included</td></tr>
-      <tr><td>Balloon décor</td><td>—</td><td>—</td><td>—</td><td>Included</td></tr>
-    </tbody>
-  </table>
+  <thead><tr><th>Feature</th><th>Little Bounce</th><th>Ball Pit Bash</th><th>Bash &amp; Bounce</th><th>The Luxe Bash</th></tr></thead>
+  <tbody>
+    <tr><td>Bounce house</td><td><span class="check">✓</span></td><td>—</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+    <tr><td>Ball pit</td><td>—</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+    <tr><td>Delivery and setup</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+    <tr><td>On-site supervision</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+    <tr><td>Balloon décor</td><td>—</td><td>—</td><td>—</td><td><span class="check">✓</span></td></tr>
+  </tbody>
+</table>
 </section>
 
 <section class="cta-band">
@@ -114,13 +116,19 @@
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-      <a href="#" class="social" aria-label="Instagram">IG</a>
-      <a href="#" class="social" aria-label="Facebook">FB</a>
-      <a href="#" class="social" aria-label="TikTok">TT</a>
-    </div>
+    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
+      <img src="../assets/logo/instagram.png" alt="Instagram">
+    </a>
+    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
+      <img src="../assets/logo/facebook.png" alt="Facebook">
+    </a>
+    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
+      <img src="../assets/logo/tiktok.png" alt="TikTok">
+    </a>
+  </div>
   </div>
   <div class="footer-col">
     <h4>Explore</h4>
@@ -152,6 +160,5 @@
   </div>
 </footer>
 
-<script src="app.js" defer></script>
 </body>
 </html>

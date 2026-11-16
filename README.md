@@ -1,52 +1,30 @@
-# Bounce Bash PH – Luxury Children's Play
+# Bounce Bash PH
 
-Website for Bounce Bash PH, a Philippine-based party rental company offering bounce houses, splash zones, and ball pits for kids' parties, school events, and family celebrations.
+Static customer and admin pages for Bounce Bash PH.
+
+## Project layout
+
+```text
+.
+├── index.html              # Redirects the site root to the customer website
+├── assets/
+│   ├── logo/
+│   └── photos/
+├── Bouncebash_CS/          # Customer website HTML and style.css
+└── Bouncebash_Admin/       # Admin panel HTML, styles.css, and its own assets/
+```
+
+The customer website uses the shared `../assets/` directory. The admin panel keeps its logo assets in `Bouncebash_Admin/assets/`.
 
 ## Pages
 
-- `index.html` – Home page (required)
-- `rentals.html` – Rentals: Dry Zone, Splash Zone, Ball Pit Zone
-- `packages.html` – Rental packages and comparison table
-- `add-ons.html` – Ball pit colors, balloon and decoration add-ons
-- `gallery.html` – Photo gallery with filters
-- `booking.html` – Reservation form and availability calendar
-- `faq.html` – Frequently asked questions
-- `privacy.html` – Privacy policy
-- `terms.html` – Terms and conditions
+- Customer website: open `Bouncebash_CS/index.html`
+- Admin panel: open `Bouncebash_Admin/index.html`
 
-## Folder structure
-
-```
-bouncebash_Website/
-├── index.html
-├── add-ons.html
-├── booking.html
-├── faq.html
-├── gallery.html
-├── packages.html
-├── privacy.html
-├── rentals.html
-├── terms.html
-├── styles.css
-├── README.md
-└── assets/
-    ├── logo/
-    │   ├── logo-full.png
-    │   └── logo-mark.png
-    └── photos/
-```
-
-## Technologies
-
-- HTML5
-- CSS3 (`styles.css`)
-
-## Notes
-
-- Prices, phone number, and customer reviews are sample values and should be replaced with real details before going live.
-- The booking calendar and forms are layout only. They don't save bookings yet.
+The pages are static prototypes. Customer account, booking, and other form submissions are not connected to a backend.
 
 ## GitHub Pages
 
-Live site: https://cessann00.github.io/BounceBash/
+The root `index.html` redirects visitors to the customer website.
 
+Live site: https://cessann00.github.io/BounceBash/

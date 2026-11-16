@@ -8,7 +8,7 @@
 </head>
 <body>
 <header class="site-header">
-  <a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
     <a href="styles.html">Styles</a>
@@ -17,10 +17,12 @@
     <a href="gallery.html">Gallery</a>
     <a href="blog.html">Featured</a>
     <a href="calendar.html">Calendar</a>
-    <a href="booking.html" class="active">Booking</a>
   </nav>
-  <a href="account.html" class="btn btn-outline">My Account</a>
-  <a href="booking.html" class="btn btn-dark">Book Now</a>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
 </header>
 
 <section class="page-header">
@@ -31,28 +33,30 @@
 <section class="booking-layout pt-40">
   <div class="booking-form card">
     <h2>Reservation details</h2>
-    <form id="booking-form">
-      <div class="field"><label for="name">Name</label><input type="text" id="name" placeholder="Full name" autocomplete="name" readonly></div>
-      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" placeholder="09XX XXX XXXX" autocomplete="tel" readonly></div>
+    <form>
+      <div class="field"><label for="name">Name</label><input type="text" id="name" placeholder="Full name"></div>
+      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" placeholder="09XX XXX XXXX"></div>
       <div class="grid-two">
-        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date" name="eventDate" required></div>
-        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time" name="eventTime" required></div>
+        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date"></div>
+        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time"></div>
       </div>
-      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" name="venue" placeholder="Full address of the event venue" minlength="5" maxlength="500" required></div>
+      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" placeholder="Full address of the event venue"></div>
       <div class="grid-two">
         <div class="field"><label for="package">Selected rental / package</label>
-          <select id="package" name="packageId" required><option value="">Choose a package</option></select></div>
-        <div class="field"><label for="model">Inflatable style / model</label>
-          <select id="model" name="modelId" required><option value="">Choose a style</option></select></div>
+          <select id="package"><option>Choose a package</option><option>Little Bounce</option><option>Ball Pit Bash</option><option>Bash &amp; Bounce</option><option>The Luxe Bash</option></select></div>
+        <div class="field"><label for="children">Number of children</label><input type="number" id="children" min="1" placeholder="e.g. 15"></div>
       </div>
-      <div class="field"><label for="children">Number of children</label><input type="number" id="children" name="childrenCount" min="1" max="1000" placeholder="e.g. 10" required></div>
       <fieldset class="addons">
         <legend>Add-ons</legend>
-        <div id="booking-addons">Loading add-ons...</div>
+        <label><input type="checkbox" name="addons"> Ball colors</label>
+        <label><input type="checkbox" name="addons"> Balloon garland</label>
+        <label><input type="checkbox" name="addons"> Balloon arch</label>
+        <label><input type="checkbox" name="addons"> Backdrop &amp; signage</label>
+        <label><input type="checkbox" name="addons"> Table styling</label>
+        <label><input type="checkbox" name="addons"> Extra hour</label>
       </fieldset>
-      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="5" maxlength="2000" placeholder="Theme, color preferences, special requests..."></textarea></div>
-      <label class="checkbox-line"><input type="checkbox" required> I understand that a 50% reservation fee is required to secure my date.</label>
-      <p id="booking-message" class="muted small" role="status" aria-live="polite"></p>
+      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" rows="5" placeholder="Theme, color preferences, special requests..."></textarea></div>
+      <label class="checkbox-line"><input type="checkbox"> I understand that a 50% reservation fee is required to secure my date.</label>
       <button type="submit" class="btn btn-dark btn-block">Submit Booking Request</button>
     </form>
     <p class="muted small">Your details are only used to process your booking. We will contact you by phone or message to confirm.</p>
@@ -110,13 +114,19 @@
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-      <a href="#" class="social" aria-label="Instagram">IG</a>
-      <a href="#" class="social" aria-label="Facebook">FB</a>
-      <a href="#" class="social" aria-label="TikTok">TT</a>
-    </div>
+    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
+      <img src="../assets/logo/instagram.png" alt="Instagram">
+    </a>
+    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
+      <img src="../assets/logo/facebook.png" alt="Facebook">
+    </a>
+    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
+      <img src="../assets/logo/tiktok.png" alt="TikTok">
+    </a>
+  </div>
   </div>
   <div class="footer-col">
     <h4>Explore</h4>
@@ -148,6 +158,5 @@
   </div>
 </footer>
 
-<script src="app.js" defer></script>
 </body>
 </html>

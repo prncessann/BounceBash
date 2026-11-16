@@ -8,7 +8,7 @@
 </head>
 <body>
 <header class="site-header">
-  <a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
     <a href="styles.html">Styles</a>
@@ -17,9 +17,12 @@
     <a href="gallery.html">Gallery</a>
     <a href="blog.html">Featured</a>
     <a href="calendar.html">Calendar</a>
-    <a href="booking.html">Booking</a>
   </nav>
-  <a href="booking.html" class="btn btn-dark">Book Now</a>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
 </header>
 
 <section class="page-header">
@@ -96,19 +99,18 @@
   <div class="card form-card">
     <h2>Share your feedback</h2>
     <p class="muted">Your words help other parents choose with confidence.</p>
-    <form id="feedback-form">
+    <form>
       <div class="grid-two">
-        <div class="field"><label for="fb-name">Name</label><input type="text" id="fb-name" name="name" placeholder="Full name" minlength="2" maxlength="100" required></div>
+        <div class="field"><label for="fb-name">Name</label><input type="text" id="fb-name" placeholder="Full name"></div>
         <div class="field"><label for="fb-event">Event type</label>
-          <select id="fb-event" name="eventType" required><option value="">Select event type</option><option>Birthday party</option><option>Christening</option><option>School event</option><option>Barangay festival</option><option>Resort event</option><option>Baby shower</option></select></div>
+          <select id="fb-event"><option>Select event type</option><option>Birthday party</option><option>Christening</option><option>School event</option><option>Barangay festival</option><option>Resort event</option><option>Baby shower</option></select></div>
       </div>
       <div class="field"><label for="fb-pkg">Package used</label>
-        <select id="fb-pkg" name="packageId" required><option value="">Select package</option><option value="little-bounce">Little Bounce</option><option value="ball-pit-bash">Ball Pit Bash</option><option value="bash-and-bounce">Bash &amp; Bounce</option><option value="the-luxe-bash">The Luxe Bash</option></select></div>
-      <div class="field"><label for="fb-rating">Your rating</label><select id="fb-rating" name="rating" required><option value="">Select rating</option><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></div>
-      <div class="field"><label for="fb-text">Your feedback</label><textarea id="fb-text" name="message" class="big" minlength="10" maxlength="2000" placeholder="Tell us about your celebration" required></textarea></div>
+        <select id="fb-pkg"><option>Select package</option><option>Little Bounce</option><option>Ball Pit Bash</option><option>Bash &amp; Bounce</option><option>The Luxe Bash</option></select></div>
+      <div class="field"><label>Your rating</label><div class="stars-input">★★★★★</div></div>
+      <div class="field"><label for="fb-text">Your feedback</label><textarea id="fb-text" class="big" placeholder="Tell us about your celebration"></textarea></div>
       <div class="field"><button type="button" class="btn btn-outline btn-block">+ Add event photos (optional)</button></div>
-      <p class="checkbox-line"><input type="checkbox" name="publishConsent" value="true"> Bounce Bash PH may feature my feedback on the website.</p>
-      <p id="feedback-message" class="muted small" role="status" aria-live="polite"></p>
+      <p class="checkbox-line"><input type="checkbox"> Bounce Bash PH may feature my feedback on the website.</p>
       <button type="submit" class="btn btn-dark btn-block">Submit Feedback</button>
     </form>
   </div>
@@ -125,13 +127,19 @@
 
 <footer class="site-footer">
   <div class="footer-brand">
-    <img src="assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-      <a href="#" class="social" aria-label="Instagram">IG</a>
-      <a href="#" class="social" aria-label="Facebook">FB</a>
-      <a href="#" class="social" aria-label="TikTok">TT</a>
-    </div>
+    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
+      <img src="../assets/logo/instagram.png" alt="Instagram">
+    </a>
+    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
+      <img src="../assets/logo/facebook.png" alt="Facebook">
+    </a>
+    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
+      <img src="../assets/logo/tiktok.png" alt="TikTok">
+    </a>
+  </div>
   </div>
   <div class="footer-col">
     <h4>Explore</h4>
@@ -163,6 +171,5 @@
   </div>
 </footer>
 
-<script src="app.js" defer></script>
 </body>
 </html>

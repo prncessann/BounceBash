@@ -32,59 +32,49 @@
 </section>
 <section class="booking-layout pt-40">
   <div class="booking-form card">
-    <h2>Reservation details</h2>
-    <form>
-      <div class="field"><label for="name">Name</label><input type="text" id="name" placeholder="Full name"></div>
-      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" placeholder="09XX XXX XXXX"></div>
+    <h2>Reservation or inquiry details</h2>
+    <form id="booking-form"><div class="field"><label for="request-type">Request type</label><select id="request-type"><option value="booking">Booking request (temporary date hold)</option><option value="inquiry">Inquiry only (does not reserve a date)</option></select></div>
+      <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" placeholder="Full name" minlength="2" required></div>
+      <div class="field"><label for="booking-email">Email for booking updates (optional)</label><input type="email" id="booking-email" name="email" maxlength="254" autocomplete="email"></div>
+      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" name="contact" placeholder="09XX XXX XXXX" required></div>
       <div class="grid-two">
-        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date"></div>
-        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time"></div>
+        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date" name="event-date" required></div>
+        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time" name="event-time" required></div>
       </div>
-      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" placeholder="Full address of the event venue"></div>
+      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" name="venue" placeholder="Full address of the event venue" required></div>
       <div class="grid-two">
         <div class="field"><label for="package">Selected rental / package</label>
-          <select id="package"><option>Choose a package</option><option>Little Bounce</option><option>Ball Pit Bash</option><option>Bash &amp; Bounce</option><option>The Luxe Bash</option></select></div>
-        <div class="field"><label for="children">Number of children</label><input type="number" id="children" min="1" placeholder="e.g. 15"></div>
+          <select id="package" name="package" required><option value="">Choose a package</option></select></div>
+        <div class="field"><label for="children">Number of children</label><input type="number" id="children" name="children" min="1" placeholder="e.g. 15" required></div>
       </div>
-      <fieldset class="addons">
+      <div class="grid-two"><div class="field"><label for="booking-zone">Rental zone</label><select id="booking-zone"></select></div><div class="field"><label for="booking-model">Rental model</label><select id="booking-model"></select></div></div><div class="field"><label for="booking-variant">Available style / color variant</label><select id="booking-variant"></select></div><fieldset class="addons">
         <legend>Add-ons</legend>
-        <label><input type="checkbox" name="addons"> Ball colors</label>
-        <label><input type="checkbox" name="addons"> Balloon garland</label>
-        <label><input type="checkbox" name="addons"> Balloon arch</label>
-        <label><input type="checkbox" name="addons"> Backdrop &amp; signage</label>
-        <label><input type="checkbox" name="addons"> Table styling</label>
-        <label><input type="checkbox" name="addons"> Extra hour</label>
+        <div id="booking-addons"></div>
       </fieldset>
-      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" rows="5" placeholder="Theme, color preferences, special requests..."></textarea></div>
-      <label class="checkbox-line"><input type="checkbox"> I understand that a 50% reservation fee is required to secure my date.</label>
-      <button type="submit" class="btn btn-dark btn-block">Submit Booking Request</button>
+      <input type="hidden" id="selected-style" name="selectedStyle">
+      <p id="selected-style-message" class="muted small" hidden></p>
+      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="5" placeholder="Theme, color preferences, special requests..."></textarea></div>
+      <label class="checkbox-line"><input type="checkbox" id="reservation-fee" required> I understand that a 50% reservation fee is required to secure my date.</label>
+      <button type="button" class="btn btn-outline" id="preview-quote">Preview catalog quote</button><p id="quote-message" role="status"></p><button type="submit" class="btn btn-dark btn-block">Submit Booking Request</button>
+      <p id="date-status" class="small mt-12" role="status"></p>
+      <p><a href="manage-booking.html">Track an existing booking</a></p>
+      <p id="booking-message" class="small mt-12" role="status"></p>
     </form>
     <p class="muted small">Your details are only used to process your booking. We will contact you by phone or message to confirm.</p>
   </div>
   <aside class="booking-side">
     <div class="card">
-      <h2>Check availability</h2>
-      <div class="calendar-header">
-        <button type="button" class="btn-icon">&lt;</button>
-        <strong>October 2026</strong>
-        <button type="button" class="btn-icon">&gt;</button>
-      </div>
-      <table class="calendar">
-        <thead><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr></thead>
-        <tbody>
-          <tr><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="day available">1</td><td class="day available">2</td><td class="day pending">3</td></tr>
-          <tr><td class="day available">4</td><td class="day booked">5</td><td class="day available">6</td><td class="day available">7</td><td class="day pending">8</td><td class="day available">9</td><td class="day booked">10</td></tr>
-          <tr><td class="day available">11</td><td class="day available">12</td><td class="day pending">13</td><td class="day available">14</td><td class="day booked">15</td><td class="day available">16</td><td class="day available">17</td></tr>
-          <tr><td class="day pending">18</td><td class="day available">19</td><td class="day booked">20</td><td class="day available">21</td><td class="day available">22</td><td class="day pending">23</td><td class="day available">24</td></tr>
-          <tr><td class="day booked">25</td><td class="day available">26</td><td class="day available">27</td><td class="day pending">28</td><td class="day available">29</td><td class="day booked">30</td><td class="day available">31</td></tr>
-        </tbody>
-      </table>
+      <h2>Current month availability</h2>
+      <p class="muted small" id="booking-mini-calendar-month">Loading...</p>
+      <div class="mini-cal" id="booking-mini-calendar" aria-label="Current month date availability"></div>
+      <p class="small muted" id="booking-mini-calendar-message" role="status"></p>
       <div class="legend">
         <span><span class="dot available"></span> Available</span>
-        <span><span class="dot pending"></span> Pending</span>
-        <span><span class="dot booked"></span> Booked</span>
+        <span><span class="dot pending"></span> Request pending</span>
+        <span><span class="dot booked"></span> Unavailable</span>
       </div>
-      <p class="muted small">Pick a date, then continue the form on the left.</p>
+      <p class="muted small">Choose the event date in the form. See full calendar for other months.</p>
+      <a href="calendar.html" class="btn btn-outline">Open full calendar</a>
     </div>
     <div class="card hoverable">
       <h2>How booking works</h2>
@@ -158,5 +148,6 @@
   </div>
 </footer>
 
+<script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>
 </html>

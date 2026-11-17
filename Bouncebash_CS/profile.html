@@ -36,11 +36,10 @@
   <!-- Profile summary -->
   <div class="account-section">
     <div class="card soft" style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
-      <span class="profile-link" style="width:64px; height:64px; font-size:1.7rem;">H</span>
+      <span class="profile-link" style="width:64px; height:64px; font-size:1.7rem;">B</span>
       <div>
-        <!-- sample details, replace with the logged-in customer's info -->
-        <h2 class="m-0" style="font-size:1.8rem;">Hazel Sample</h2>
-        <p class="muted small m-0">hazel@example.com &nbsp;|&nbsp; Member since Nov 2026</p>
+        <h2 class="m-0 profile-summary-name" style="font-size:1.8rem;">Loading profile...</h2>
+        <p class="muted small m-0 profile-summary-meta">Loading account details...</p>
       </div>
       <a href="booking.html" class="btn btn-book ml-auto">Book a Party</a>
     </div>
@@ -55,11 +54,11 @@
       <div class="grid-two">
         <div class="field">
           <label for="profile-name">Full name</label>
-          <input type="text" id="profile-name" name="name" value="Hazel Sample" required>
+          <input type="text" id="profile-name" name="name" required>
         </div>
         <div class="field">
           <label for="profile-email">Email</label>
-          <input type="email" id="profile-email" name="email" value="hazel@example.com" required>
+          <input type="email" id="profile-email" name="email" required readonly>
         </div>
         <div class="field">
           <label for="profile-phone">Mobile number</label>
@@ -75,7 +74,7 @@
         <textarea id="profile-address" name="address" rows="3" placeholder="House no., street, barangay, city"></textarea>
       </div>
       <button type="submit" class="btn btn-book">Save changes</button>
-      <p id="account-message" class="small mt-12" role="status"></p>
+      <p id="profile-message" class="small mt-12" role="status"></p>
     </form>
   </div>
 
@@ -86,27 +85,12 @@
       <a href="calendar.html" class="btn btn-outline">Check dates</a>
     </div>
     <div class="card">
-      <!-- sample bookings, replace with real data -->
-      <div class="account-booking">
-        <div>
-          <h3>Bash &amp; Bounce</h3>
-          <p class="muted small">Sat, Dec 12, 2026 &nbsp;|&nbsp; Quezon City</p>
-          <p class="small m-0">Total: PHP 8,500 &nbsp;|&nbsp; Down payment: PHP 4,250</p>
-        </div>
-        <span class="tag">Pending</span>
-      </div>
-      <div class="account-booking">
-        <div>
-          <h3>Little Bounce</h3>
-          <p class="muted small">Sun, Oct 18, 2026 &nbsp;|&nbsp; Caloocan</p>
-          <p class="small m-0">Total: PHP 4,500 &nbsp;|&nbsp; Fully paid</p>
-        </div>
-        <span class="tag aesthetic">Completed</span>
-      </div>
-      <p class="muted small center mt-20 m-0">No other bookings yet.</p>
+      <div id="booking-list"></div>
     </div>
   </div>
 
+  <div class="account-section"><form class="card" id="change-email-form"><h2>Change email</h2><p>Confirm your password to change your email. Other sessions will be signed out.</p><div class="field"><label for="new-email">New email address</label><input id="new-email" type="email" maxlength="254" required></div><div class="field"><label for="email-password">Current password</label><input id="email-password" type="password" autocomplete="current-password" required></div><button type="submit" class="btn btn-outline">Change email</button><button type="button" id="resend-verification" class="btn btn-outline">Resend verification</button><p id="email-message" role="status"></p></form></div>
+<div class="account-section"><div class="card"><h2>My Inquiries</h2><div id="inquiry-list">Loading inquiries...</div></div></div>
   <!-- Password & logout -->
   <div class="account-section">
     <div class="account-section-heading">
@@ -116,18 +100,20 @@
       <div class="grid-two">
         <div class="field">
           <label for="current-password">Current password</label>
-          <input type="password" id="current-password" name="current" autocomplete="current-password">
+          <input type="password" id="current-password" name="current" autocomplete="current-password" required>
         </div>
         <div class="field">
           <label for="new-password">New password</label>
-          <input type="password" id="new-password" name="new" minlength="8" autocomplete="new-password">
+          <input type="password" id="new-password" name="new" minlength="8" autocomplete="new-password" required>
         </div>
       </div>
       <div class="button-row">
         <button type="submit" class="btn btn-outline">Update password</button>
-        <a href="index.html" class="btn btn-dark">Log out</a>
+        <a href="index.html" class="btn btn-dark" id="logout-link">Log out</a>
       </div>
+      <p id="password-message" class="small mt-12" role="status"></p>
     </form>
+    <p id="logout-message" class="small mt-12" role="status"></p>
   </div>
 
 </section>
@@ -171,5 +157,6 @@
   </div>
 </footer>
 
+<script src="site.js"></script><script src="catalog-tools.js"></script><script src="customer-tools.js"></script>
 </body>
 </html>

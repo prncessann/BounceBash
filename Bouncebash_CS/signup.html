@@ -18,8 +18,7 @@
   <div class="card auth-card">
     <p class="eyebrow center">Join us</p>
     <h1 class="center">Create account</h1>
-    {% if error %}<p class="auth-error">{{ error }}</p>{% endif %}
-    <form action="/signup" method="post">
+    <form id="signup-form">
       <div class="field">
         <label for="name">Full name</label>
         <input type="text" id="name" name="name" required>
@@ -33,9 +32,11 @@
         <input type="password" id="password" name="password" minlength="8" required>
       </div>
       <button type="submit" class="btn btn-book btn-block">Sign up</button>
+      <p id="signup-message" class="small mt-12" role="status"></p>
     </form>
     <p class="switch">May account ka na? <a href="login.html">Log in</a></p>
   </div>
 </section>
+<script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>
 </html>

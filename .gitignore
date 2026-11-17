@@ -1,3 +1,11 @@
+node_modules/
+.env
+data/*.sqlite*
+backups/
+*.log
+.DS_Store
+public/
+*.sqlite-wal
+*.sqlite-shm
 
 .history/
-.dist/

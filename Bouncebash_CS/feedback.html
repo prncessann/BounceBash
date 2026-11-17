@@ -33,18 +33,19 @@
 <section class="pt-40">
   <div class="rating-row">
     <div class="card rating-big">
-      <div class="score">4.9</div>
+      <div class="score" id="review-score">0.0</div>
       <p class="stars center">★★★★★</p>
-      <p class="muted small">Based on 126 reviews</p>
+      <p class="muted small" id="review-count">Loading public reviews...</p>
     </div>
     <div class="card">
       <h3>Rating breakdown</h3>
-      <!-- SAMPLE breakdown: replace with real counts -->
-      <div class="bar-row"><span>5 stars</span><div class="bar"><span class="w-89"></span></div><span>112</span></div>
-      <div class="bar-row"><span>4 stars</span><div class="bar"><span class="w-10"></span></div><span>12</span></div>
-      <div class="bar-row"><span>3 stars</span><div class="bar"><span class="w-2"></span></div><span>3</span></div>
-      <div class="bar-row"><span>2 stars</span><div class="bar"><span class="w-1"></span></div><span>1</span></div>
-      <div class="bar-row"><span>1 star</span><div class="bar"><span class="w-0"></span></div><span>0</span></div>
+      <div id="review-breakdown">
+        <div class="bar-row" data-rating-row="5"><span>5 stars</span><div class="bar"><span></span></div><span data-count>0</span></div>
+        <div class="bar-row" data-rating-row="4"><span>4 stars</span><div class="bar"><span></span></div><span data-count>0</span></div>
+        <div class="bar-row" data-rating-row="3"><span>3 stars</span><div class="bar"><span></span></div><span data-count>0</span></div>
+        <div class="bar-row" data-rating-row="2"><span>2 stars</span><div class="bar"><span></span></div><span data-count>0</span></div>
+        <div class="bar-row" data-rating-row="1"><span>1 star</span><div class="bar"><span></span></div><span data-count>0</span></div>
+      </div>
     </div>
     <div class="selected-card">
       <h2>Celebrated with us?</h2>
@@ -53,65 +54,36 @@
     </div>
   </div>
   <div class="filter-pills mt-30">
-    <a href="feedback.html" class="btn btn-dark">All reviews</a>
-    <a href="feedback.html" class="btn btn-outline">5 stars</a>
-    <a href="feedback.html" class="btn btn-outline">Birthday</a>
-    <a href="feedback.html" class="btn btn-outline">School event</a>
-    <a href="feedback.html" class="btn btn-outline">Barangay festival</a>
-    <a href="feedback.html" class="btn btn-outline">Resort event</a>
+    <a href="#reviews" class="btn btn-dark" data-review-filter aria-pressed="true">All reviews</a>
+    <a href="#reviews" class="btn btn-outline" data-review-filter data-review-rating="5" aria-pressed="false">5 stars</a>
+    <a href="#reviews" class="btn btn-outline" data-review-filter data-review-event="Birthday party" aria-pressed="false">Birthday</a>
+    <a href="#reviews" class="btn btn-outline" data-review-filter data-review-event="School event" aria-pressed="false">School event</a>
+    <a href="#reviews" class="btn btn-outline" data-review-filter data-review-event="Barangay festival" aria-pressed="false">Barangay festival</a>
+    <a href="#reviews" class="btn btn-outline" data-review-filter data-review-event="Resort event" aria-pressed="false">Resort event</a>
   </div>
-  <!-- SAMPLE REVIEWS: replace with real customer reviews before publishing -->
-  <div class="reviews-grid">
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>The bounce house was spotless and the setup team arrived on time. The kids did not want to leave.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">Birthday party · Little Bounce</span></span></p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Everything was delivered and set up before the guests arrived. The ball pit was a big hit with the toddlers.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">Christening · Ball Pit Bash</span></span></p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Booking was simple, and the team supervised the whole event. The balloon arch made the photos look beautiful.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">School event · Bash & Bounce</span></span></p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Set up was quick and the staff kept the kids safe the whole afternoon.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">Barangay festival · The Luxe Bash</span></span></p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Soft colors matched our theme perfectly. Very easy to book.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">Baby shower · Ball Pit Bash</span></span></p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Great for our family day. We will book again next year.</p>
-      <p class="reviewer"><span class="avatar"></span> <span><strong>Sample Client</strong><br><span class="meta">Resort event · Little Bounce</span></span></p>
-    </div>
-  </div>
-  <div class="load-more"><button type="button" class="btn btn-outline">Load More Reviews</button></div>
+  <div class="reviews-grid" id="reviews-grid"></div>
+  <p id="reviews-message" class="muted small center" role="status"></p>
+  <div class="load-more"><button type="button" class="btn btn-outline" id="load-reviews" hidden>Load More Reviews</button></div>
 </section>
 <section id="share" class="pt-20">
   <div class="card form-card">
     <h2>Share your feedback</h2>
     <p class="muted">Your words help other parents choose with confidence.</p>
-    <form>
+    <form id="feedback-form">
       <div class="grid-two">
-        <div class="field"><label for="fb-name">Name</label><input type="text" id="fb-name" placeholder="Full name"></div>
+        <div class="field"><label for="fb-name">Name</label><input type="text" id="fb-name" name="name" placeholder="Full name" required></div>
         <div class="field"><label for="fb-event">Event type</label>
-          <select id="fb-event"><option>Select event type</option><option>Birthday party</option><option>Christening</option><option>School event</option><option>Barangay festival</option><option>Resort event</option><option>Baby shower</option></select></div>
+          <select id="fb-event" name="eventType"><option value="">Select event type</option><option>Birthday party</option><option>Christening</option><option>School event</option><option>Barangay festival</option><option>Resort event</option><option>Baby shower</option></select></div>
       </div>
       <div class="field"><label for="fb-pkg">Package used</label>
-        <select id="fb-pkg"><option>Select package</option><option>Little Bounce</option><option>Ball Pit Bash</option><option>Bash &amp; Bounce</option><option>The Luxe Bash</option></select></div>
-      <div class="field"><label>Your rating</label><div class="stars-input">★★★★★</div></div>
-      <div class="field"><label for="fb-text">Your feedback</label><textarea id="fb-text" class="big" placeholder="Tell us about your celebration"></textarea></div>
-      <div class="field"><button type="button" class="btn btn-outline btn-block">+ Add event photos (optional)</button></div>
-      <p class="checkbox-line"><input type="checkbox"> Bounce Bash PH may feature my feedback on the website.</p>
+        <select id="fb-pkg" name="packageName"><option value="">Select package</option><option>Little Bounce</option><option>Ball Pit Bash</option><option>Bash &amp; Bounce</option><option>The Luxe Bash</option></select></div>
+      <div class="field"><label for="fb-rating">Your rating</label>
+        <select id="fb-rating" name="rating"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></div>
+      <div class="field"><label for="fb-text">Your feedback</label><textarea id="fb-text" name="message" class="big" placeholder="Tell us about your celebration" required></textarea></div>
+      <p class="muted small">Photo uploads are not available yet; you can describe your event in your feedback.</p>
+      <p class="checkbox-line"><input type="checkbox" id="share-publicly"> Bounce Bash PH may feature my feedback on the website.</p>
       <button type="submit" class="btn btn-dark btn-block">Submit Feedback</button>
+      <p id="feedback-message" class="small mt-12" role="status"></p>
     </form>
   </div>
 </section>
@@ -171,5 +143,6 @@
   </div>
 </footer>
 
+<script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>
 </html>

@@ -224,6 +224,7 @@ section { padding: 48px 6%; }
 /* ---------- Packages page ---------- */
 .how-it-works { margin: 0 6% 40px; text-align: center; }
 .compare { padding-top: 24px; }
+.table-scroll { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: var(--radius); overflow: hidden; }
 .data-table th, .data-table td { padding: 12px 14px; text-align: center; border-bottom: 1px solid var(--line); }
 .data-table th:first-child, .data-table td:first-child { text-align: left; }
@@ -241,10 +242,11 @@ section { padding: 48px 6%; }
 
 /* ---------- Calendar page ---------- */
 .cal-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; align-items: start; }
+.cal-layout > * { min-width: 0; }
 .cal-side { display: flex; flex-direction: column; gap: 20px; }
 .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .calendar-header strong { font-family: var(--serif); font-size: 1.8rem; color: var(--mocha); font-weight: 600; }
-.calendar { width: 100%; border-collapse: separate; border-spacing: 6px; text-align: center; }
+.calendar { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 6px; text-align: center; }
 .calendar th { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; padding-bottom: 6px; }
 .calendar td { height: 74px; border-radius: 10px; font-size: 0.85rem; vertical-align: middle; }
 .calendar td.empty { background: none; }
@@ -286,8 +288,13 @@ section { padding: 48px 6%; }
 #booking-addons label { display: flex; align-items: center; gap: 8px; }
 .calendar td[data-date] { cursor: pointer; }
 .calendar td[data-date]:focus-visible { outline: 3px solid var(--mocha); outline-offset: 1px; }
+.calendar td[data-date]:hover { filter: brightness(0.96); }
+.calendar td[data-date][aria-disabled="true"] { cursor: not-allowed; opacity: 0.6; }
+.calendar td[data-date][aria-disabled="true"]:hover { filter: none; }
+#calendar-message[data-state="error"], #reviews-message[data-state="error"], #home-reviews-message[data-state="error"] { color: #a33b31; }
 .mt-12 { margin-top: 12px; }
 button:disabled { cursor: wait; opacity: 0.65; }
+[hidden] { display: none !important; }
 
 @media (max-width: 760px) {
   .account-booking, .account-section-heading { align-items: flex-start; flex-direction: column; }
@@ -543,7 +550,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); bord
 }
 
 /* ---------- Page header lead on one line ---------- */
-.page-header .lead { max-width: none; white-space: nowrap; }
+.page-header .lead { max-width: none; }
 
 /* ---------- Mini calendar ---------- */
 .mini-cal-card { padding: 20px 24px; }

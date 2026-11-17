@@ -63,46 +63,13 @@
       </div>
     </div>
     <div class="card mini-cal-card">
-      <p class="muted small">October 2026</p>
-      <div class="mini-cal">
-        <span class="mini-dow">S</span><span class="mini-dow">M</span><span class="mini-dow">T</span><span class="mini-dow">W</span><span class="mini-dow">T</span><span class="mini-dow">F</span><span class="mini-dow">S</span>
-        <span class="mini-day empty"></span><span class="mini-day empty"></span><span class="mini-day empty"></span><span class="mini-day empty"></span>
-        <span class="mini-day available">1</span>
-        <span class="mini-day available">2</span>
-        <span class="mini-day pending">3</span>
-        <span class="mini-day available">4</span>
-        <span class="mini-day booked">5</span>
-        <span class="mini-day available">6</span>
-        <span class="mini-day available">7</span>
-        <span class="mini-day pending">8</span>
-        <span class="mini-day available">9</span>
-        <span class="mini-day booked">10</span>
-        <span class="mini-day available">11</span>
-        <span class="mini-day available">12</span>
-        <span class="mini-day pending">13</span>
-        <span class="mini-day available">14</span>
-        <span class="mini-day booked">15</span>
-        <span class="mini-day available">16</span>
-        <span class="mini-day available">17</span>
-        <span class="mini-day pending">18</span>
-        <span class="mini-day available">19</span>
-        <span class="mini-day booked">20</span>
-        <span class="mini-day available">21</span>
-        <span class="mini-day available">22</span>
-        <span class="mini-day pending">23</span>
-        <span class="mini-day available">24</span>
-        <span class="mini-day booked">25</span>
-        <span class="mini-day available">26</span>
-        <span class="mini-day available">27</span>
-        <span class="mini-day pending">28</span>
-        <span class="mini-day available">29</span>
-        <span class="mini-day booked">30</span>
-        <span class="mini-day available">31</span>
-      </div>
+      <p class="muted small" id="mini-calendar-month">Loading...</p>
+      <div class="mini-cal" id="mini-calendar" aria-label="Current month date availability"></div>
+      <p class="small muted" id="mini-calendar-message" role="status"></p>
       <div class="legend">
         <span><span class="dot available"></span> Available</span>
-        <span><span class="dot pending"></span> Pending</span>
-        <span><span class="dot booked"></span> Booked</span>
+        <span><span class="dot pending"></span> Request pending</span>
+        <span><span class="dot booked"></span> Unavailable</span>
       </div>
     </div>
   </div>
@@ -161,24 +128,8 @@
 <section class="testimonials" id="testimonials">
   <p class="eyebrow center">Happy Parents</p>
   <h2 class="center">What our clients say</h2>
-  <!-- SAMPLE REVIEWS: replace with real customer reviews before publishing -->
-  <div class="card-grid grid-three">
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>The bounce house was spotless and the setup team arrived on time. The kids did not want to leave.</p>
-      <p class="reviewer"><span class="avatar"></span> Sample Client, Birthday party</p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Everything was delivered and set up before the guests arrived. The ball pit was a big hit with the toddlers.</p>
-      <p class="reviewer"><span class="avatar"></span> Sample Client, Family celebration</p>
-    </div>
-    <div class="review-card">
-      <p class="stars">★★★★★</p>
-      <p>Booking was simple, and the team supervised the whole event. The balloon arch made the photos look beautiful.</p>
-      <p class="reviewer"><span class="avatar"></span> Sample Client, School event</p>
-    </div>
-  </div>
+  <div class="card-grid grid-three" id="home-testimonials"></div>
+  <p id="home-reviews-message" class="muted small center" role="status"></p>
   <div class="button-row center"><a href="feedback.html" class="btn btn-outline">Read all reviews</a></div>
 </section>
 
@@ -273,7 +224,7 @@
     <a href="#" class="modal-close" aria-label="Close">&times;</a>
     <p class="eyebrow center">Welcome back</p>
     <h2 class="center">Log in</h2>
-    <form action="#">
+    <form id="login-form">
       <div class="field">
         <label for="login-email">Email</label>
         <input type="email" id="login-email" name="email" required>
@@ -283,6 +234,8 @@
         <input type="password" id="login-password" name="password" required>
       </div>
       <button type="submit" class="btn btn-book btn-block">Log in</button>
+      <p><a href="account-help.html">Forgot password?</a></p>
+      <p id="login-message" class="small mt-12" role="status"></p>
     </form>
     <p class="switch">Don't have an account? <a href="#signup">Sign up</a></p>
   </div>
@@ -295,7 +248,7 @@
     <a href="#" class="modal-close" aria-label="Close">&times;</a>
     <p class="eyebrow center">Join us</p>
     <h2 class="center">Create account</h2>
-    <form action="#">
+    <form id="signup-form">
       <div class="field">
         <label for="signup-name">Full name</label>
         <input type="text" id="signup-name" name="name" required>
@@ -309,10 +262,12 @@
         <input type="password" id="signup-password" name="password" minlength="8" required>
       </div>
       <button type="submit" class="btn btn-book btn-block">Sign up</button>
+      <p id="signup-message" class="small mt-12" role="status"></p>
     </form>
     <p class="switch">Already have an account? <a href="#login">Log in</a></p>
   </div>
 </div>
 
+<script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>
 </html>

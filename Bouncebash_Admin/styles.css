@@ -249,7 +249,6 @@ body.rpt{
 .rpt .chip{border-radius:0;border:1px solid #c9ccd2;margin-left:-1px;padding:6px 16px;font-size:12px;background:#fff;color:var(--mute)}
 .rpt .chip:first-child{border-radius:4px 0 0 4px;margin-left:0}.rpt .chip:last-child{border-radius:0 4px 4px 0}
 .rpt .chip:hover{color:var(--ink);background:var(--tint)}
-.rpt .chip.on,.rpt .bk:has(.fr:checked) .chip[data-f]{}
 .rpt .chip.on,
 .rpt .bk:has(#fa:checked) [data-f="fa"],.rpt .bk:has(#f0:checked) [data-f="f0"],.rpt .bk:has(#f1:checked) [data-f="f1"],.rpt .bk:has(#f2:checked) [data-f="f2"],.rpt .bk:has(#fn:checked) [data-f="fn"],
 .rpt .dash:has(#rm:checked) [data-f="rm"],.rpt .dash:has(#rt:checked) [data-f="rt"]{background:var(--navy);color:#fff;border-color:var(--navy);position:relative}
@@ -328,3 +327,78 @@ body.rpt{
 }
 .rpt .g4{margin-bottom:22px !important}.rpt .g3{margin-top:16px !important}.rpt .g2{margin-top:16px}
 .rpt .dg>*,.rpt .grid>*{min-width:0}.rpt .dg{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr)}@media (max-width:900px){.rpt .dg{grid-template-columns:minmax(0,1fr)}.rpt .calwrap{grid-template-columns:minmax(0,1fr) !important}}
+.bad{color:#a33b31}
+
+/* Mobile menu button for the admin sidebar */
+.admin-nav-toggle { display: none; background: none; border: 0; cursor: pointer; width: 42px; height: 42px; padding: 10px; flex-direction: column; justify-content: center; gap: 5px; }
+.admin-nav-toggle span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .2s, opacity .2s; }
+aside.nav-open .admin-nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+aside.nav-open .admin-nav-toggle span:nth-child(2) { opacity: 0; }
+aside.nav-open .admin-nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (max-width:900px){
+  .admin-nav-toggle { display: flex; }
+  aside.has-toggle nav { display: none; overflow: visible; flex-direction: column; gap: 2px; }
+  aside.has-toggle { position: relative; }
+  .admin-nav-toggle { position: absolute; right: 12px; top: 14px; left: auto; margin: 0; }
+  aside.has-toggle > a:first-child { margin-right: 52px; }
+  aside.has-toggle.nav-open nav { display: flex; }
+  aside.nav-open nav a { white-space: normal; padding: 12px 6px; font-size: 1rem; }
+}
+
+/* ============================================================
+   Bookings: operator bar divider, status messages, booking drawer
+   (paste at the END of styles.css)
+   ============================================================ */
+
+/* Divider under "Signed in as ..." + Sign out */
+.rpt *:has(> #live-user){display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+
+/* Status messages (the earlier .bad rule lost to .rpt .mu, so errors were grey) */
+.rpt .mu.bad{color:var(--red);font-weight:600}
+.rpt .mu.ok{color:var(--grn);font-weight:600}
+#live-msg{min-height:1.5em;margin:0}
+#bk-msg{min-height:1.5em;margin:0 0 6px}
+
+/* Booking drawer: not focusable while closed */
+.bkd{visibility:hidden;transition:transform .22s,visibility 0s linear .22s}
+.bkd.on{visibility:visible;transition:transform .22s,visibility 0s}
+.bkd h3{margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--line)}
+.bkd .row{border-top:1px solid #eeeeea}
+.bkd .row:first-of-type{border-top:0}
+.bkd .btn+.btn{margin-top:8px}
+
+/* Disabled buttons (Confirm booking before the deposit is verified) */
+.btn:disabled,.rpt .btn:disabled{opacity:.45;cursor:not-allowed}
+.rpt .btn.dark:disabled:hover{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (prefers-reduced-motion:reduce){.bkd,.bkd.on{transition:none}}
+/* ============================================================
+   Cancel / refund / complete actions (paste at the END of styles.css,
+   after the earlier additions)
+   ============================================================ */
+#bk-title{font-size:17px;line-height:1.3}
+.btn.danger,.rpt .btn.danger{color:var(--red);border-color:var(--red);background:#fff}
+.btn.danger:hover,.rpt .btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}
+.hint-box{margin:10px 0 0;padding:10px 12px;border-left:3px solid var(--amb);background:var(--tint);font-size:12px}
+.bkd .btn.dark:disabled,.bkd .btn.gold:disabled{cursor:not-allowed}
+
+/* ============================================================
+   Bookings table: scroll sideways inside its own box
+   ============================================================ */
+.rpt .tw,
+.rpt .tw.card,
+.rpt .tw.pad,
+.rpt *:has(> table > #live-rows){
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.rpt table:has(> #live-rows){min-width:860px}
+#live-rows .id a{white-space:nowrap}
+#live-rows td{padding:12px 10px}
+
+/* ============================================================
+   Bookings: live filter chips + table scroll
+   (paste at the END of styles.css)
+   ============================================================ */
+.rpt .chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.rpt .chips .chip{flex:none;white-space:nowrap;font-family:inherit;cursor:pointer}
+.rpt .chips .chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}

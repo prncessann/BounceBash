@@ -124,6 +124,7 @@ async function start() {
       await db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now());
       await db.prepare('DELETE FROM account_tokens WHERE expires_at <= ?').run(now());
       await db.prepare('DELETE FROM rate_limits WHERE expires_at <= ?').run(Date.now());
+      await db.prepare('DELETE FROM staff_sessions WHERE expires_at <= ?').run(now());
     })();
   }
   async function available(day, exclude = 0) {
@@ -154,16 +155,23 @@ async function start() {
     }));
     next();
   }
-  function operator(req, res, next) {
-    if (!config.operatorKey) return next(Object.assign(new Error('Operator access is disabled until OPERATOR_API_KEY is configured.'), {
-      status: 503
-    }));
+  async function staffFor(req) {
+    const raw = req.cookies.staff_session;
+    if (typeof raw !== 'string' || !/^[a-f0-9]{64}$/.test(raw)) return null;
+    return (await db.prepare('SELECT u.* FROM staff_users u JOIN staff_sessions s ON u.id=s.staff_id WHERE s.token=? AND s.expires_at>?').get(hash(raw), now())) || null;
+  }
+  async function operator(req, res, next) {
     const raw = req.get('Authorization') || '';
-    if (!crypto.timingSafeEqual(Buffer.from(hash(raw)), Buffer.from(hash(`Bearer ${config.operatorKey}`)))) return next(Object.assign(new Error('Operator authentication required.'), {
-      status: 401
-    }));
-    req.actor = 'operator';
-    next();
+    if (config.operatorKey && crypto.timingSafeEqual(Buffer.from(hash(raw)), Buffer.from(hash(`Bearer ${config.operatorKey}`)))) {
+      req.actor = 'operator';
+      return next();
+    }
+    if (await staffFor(req)) {
+      req.actor = 'staff';
+      return next();
+    }
+    if (!config.operatorKey) return next(Object.assign(new Error('Operator access is disabled until OPERATOR_API_KEY is configured.'), { status: 503 }));
+    return next(Object.assign(new Error('Operator authentication required.'), { status: 401 }));
   }
   async function session(res, id) {
     const raw = token();
@@ -194,6 +202,8 @@ async function start() {
   }
   const authRate = rate('authentication', config.authLimit, 15 * 60000);
   const publicRate = rate('public-submissions', config.publicLimit, 15 * 60000);
+  await db.prepare("CREATE TABLE IF NOT EXISTS staff_users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)").run();
+  await db.prepare("CREATE TABLE IF NOT EXISTS staff_sessions (id TEXT PRIMARY KEY, staff_id TEXT NOT NULL, token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL)").run();
   app.use((req, res, next) => {
     res.set({
       'X-Content-Type-Options': 'nosniff',
@@ -1334,6 +1344,26 @@ async function start() {
       success: true
     });
   }));
+  app.post('/api/staff/login', authRate, asyncRoute(async (req, res) => {
+    const mail = email(req.body.email);
+    const pass = credential(req.body.password);
+    const staff = await db.prepare('SELECT * FROM staff_users WHERE email=?').get(mail);
+    const valid = await bcrypt.compare(pass, staff ? staff.password_hash : dummyHash);
+    if (!staff || !valid) fail(401, 'Invalid email or password.');
+    const raw = token();
+    await db.prepare('INSERT INTO staff_sessions(id,staff_id,token,expires_at) VALUES (?,?,?,?)').run(crypto.randomUUID(), staff.id, hash(raw), new Date(Date.now() + 8 * 3600000).toISOString());
+    res.cookie('staff_session', raw, { ...cookieOptions, maxAge: 8 * 3600000 });
+    res.json({ success: true, name: staff.name });
+  }));
+  app.post('/api/staff/logout', asyncRoute(async (req, res) => {
+    if (typeof req.cookies.staff_session === 'string') await db.prepare('DELETE FROM staff_sessions WHERE token=?').run(hash(req.cookies.staff_session));
+    res.clearCookie('staff_session', cookieOptions);
+    res.json({ success: true });
+  }));
+  app.get('/api/staff/session', asyncRoute(async (req, res) => {
+    const staff = await staffFor(req);
+    res.json(staff ? { authenticated: true, name: staff.name } : { authenticated: false });
+  }));
   app.use('/api', (req, res) => res.status(404).json({
     error: 'API endpoint not found.'
   }));
@@ -1349,8 +1379,13 @@ async function start() {
     if (!/^\/(?:[a-zA-Z0-9_-]+\.(?:html|css|js|png|jpg|jpeg|svg|webp)|)?$/.test(req.path)) return res.status(404).send('Not found.');
     next();
   }, express.static(path.join(__dirname, 'Bouncebash_CS'), publicOptions));
+  app.use('/Bouncebash_Admin', asyncRoute(async (req, res, next) => {
+    const isPage = req.path === '/' || req.path.endsWith('.html');
+    if (isPage && req.path !== '/login.html' && !(await staffFor(req))) return res.redirect('/Bouncebash_Admin/login.html');
+    next();
+  }));
   app.use('/Bouncebash_Admin', (req, res, next) => {
-    if (!/^\/(?:[a-zA-Z0-9_/-]+\.(?:html|css|png|jpg|jpeg|svg|webp)|)?$/.test(req.path)) return res.status(404).send('Not found.');
+    if (!/^\/(?:[a-zA-Z0-9_/-]+\.(?:html|css|js|png|jpg|jpeg|svg|webp)|)?$/.test(req.path)) return res.status(404).send('Not found.');
     next();
   }, express.static(path.join(__dirname, 'Bouncebash_Admin'), publicOptions));
   app.get('/', (req, res) => res.redirect('/Bouncebash_CS/index.html'));

@@ -190,11 +190,21 @@ async function initBookingForm(form) {
         body: JSON.stringify(payload),
       });
       if (inquiry) { setStatus(bookingMessage, `${result.message} Inquiry ID: ${result.inquiryId}`, false); form.reset(); packageField.dispatchEvent(new Event('change')); return; }
-      setStatus(bookingMessage, `${result.message} Reference: ${result.booking.reference}. Private tracking code: ${result.booking.accessToken}. Save this code securely.`, false);
+      bookingMessage.replaceChildren();
+      bookingMessage.dataset.state = 'success';
+      const codeRow = (label, value) => {
+        const row = document.createElement('div'); row.className = 'bb-code-row';
+        const name = document.createElement('span'); name.className = 'bb-code-label'; name.textContent = label;
+        const code = document.createElement('code'); code.className = 'bb-code'; code.textContent = value;
+        row.append(name, code); return row;
+      };
+      const intro = document.createElement('p'); intro.textContent = result.message; intro.className = 'bb-success-text';
+      const saveNote = document.createElement('p'); saveNote.className = 'bb-muted'; saveNote.textContent = 'Save this code securely.';
+      bookingMessage.append(intro, codeRow('Reference', result.booking.reference), codeRow('Private tracking code', result.booking.accessToken), saveNote);
       const tracking = document.createElement('a');
       tracking.className = 'btn btn-outline'; tracking.textContent = 'Manage this booking';
       tracking.href = 'manage-booking.html#' + new URLSearchParams({ reference: result.booking.reference, token: result.booking.accessToken });
-      bookingMessage.append(document.createElement('br'), tracking);
+      bookingMessage.append(tracking);
       form.reset();
       packageField.dispatchEvent(new Event('change'));
       if (selectedStyleMessage) { selectedStyleMessage.textContent = ''; selectedStyleMessage.hidden = true; }
@@ -203,7 +213,7 @@ async function initBookingForm(form) {
         setStatus(dateStatus, '', false);
       }
     } catch (error) {
-      setStatus(bookingMessage, error.message, true);
+      setStatus(bookingMessage, error.message, true); if (window.BBNotify) BBNotify.error(error.message, { duration: 8000 });
     } finally {
       submitting = false;
       if (submitButton && catalogLoaded) submitButton.disabled = false;
@@ -857,3 +867,32 @@ async function loadProfileData() {
     }
   }
 }
+
+
+/* Mobile menu button: shows and hides the nav and sign-in links on phones */
+(function () {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  const nav = header.querySelector('.site-nav');
+  const actions = header.querySelector('.header-actions');
+  if (!nav && !actions) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'nav-toggle';
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-label', 'Open menu');
+  btn.innerHTML = '<span></span><span></span><span></span>';
+  header.append(btn);
+  const close = () => {
+    header.classList.remove('nav-open');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Open menu');
+  };
+  btn.addEventListener('click', () => {
+    const open = header.classList.toggle('nav-open');
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+  header.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+})();

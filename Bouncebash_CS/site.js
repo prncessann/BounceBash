@@ -2,8 +2,8 @@ let refreshPublicReviews = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const bookingForm = document.getElementById('booking-form');
-  if (bookingForm) {
-    initBookingForm(bookingForm);
+  if (bookingForm && bookingForm.dataset.wizard !== 'true') {
+    console.error('Use the current booking wizard.');
   }
 
   const feedbackForm = document.getElementById('feedback-form');
@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initHomepageReviews();
   }
 
+  const returnTo=new URLSearchParams(location.search).get('next');
+  if(returnTo&&safeAuthReturn()!=='profile.html')document.querySelectorAll('a[href="login.html"],a[href="signup.html"]').forEach(a=>{a.href=a.getAttribute('href')+'?next='+encodeURIComponent(returnTo);});
   initPackageBookingLinks();
   initSessionState();
 });
@@ -86,143 +88,9 @@ function setStatus(element, message, isError = false) {
   element.dataset.state = isError ? 'error' : 'success';
 }
 
-async function initBookingForm(form) {
-  const packageField = document.getElementById('package');
-  const addOnsContainer = document.getElementById('booking-addons');
-  const dateInput = document.getElementById('event-date');
-  const dateStatus = document.getElementById('date-status');
-  const bookingMessage = document.getElementById('booking-message');
-  const selectedStyleField = document.getElementById('selected-style');
-  const selectedStyleMessage = document.getElementById('selected-style-message');
-  const submitButton = form.querySelector('button[type="submit"]');
-  let catalogLoaded = false;
-  let submitting = false;
-
-  if (packageField) {
-    try {
-      const data = await apiRequest('/api/catalog');
-      packageField.replaceChildren(new Option('Choose a package', ''), ...data.packages.map(pkg => new Option(pkg.name, pkg.name)));
-      if (addOnsContainer) {
-        addOnsContainer.replaceChildren(...data.addOns.map(addon => {
-          const label = document.createElement('label'); const input = document.createElement('input');
-          input.type = 'checkbox'; input.name = 'addons'; input.value = addon.name;
-          label.append(input, document.createTextNode(' ' + addon.name)); return label;
-        }));
-      }
-      if (typeof configureBookingCatalog === 'function') configureBookingCatalog(data);
-      catalogLoaded = true;
-    } catch (error) {
-      console.error('Unable to load booking catalog:', error);
-      setStatus(bookingMessage, 'Packages could not be loaded. Please refresh and try again.', true);
-      if (submitButton) submitButton.disabled = true;
-    }
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const requestedPackage = params.get('package');
-  if (packageField && requestedPackage) {
-    packageField.value = requestedPackage;
-  }
-  const requestedStyle = params.get('style');
-  const validStyles = ['Classic White Castle', 'Boho Pastel Playground', 'Rainbow Racer Slide', 'Carnival Pop Castle'];
-  if (selectedStyleField && validStyles.includes(requestedStyle)) {
-    selectedStyleField.value = requestedStyle;
-    selectedStyleMessage.textContent = `Selected style: ${requestedStyle}`;
-    selectedStyleMessage.hidden = false;
-  }
-
-  if (dateInput) {
-    const today = new Date();
-    dateInput.min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const checkAvailability = async () => {
-      if (!dateInput.value) return;
-      try {
-        const data = await apiRequest(`/api/availability?date=${encodeURIComponent(dateInput.value)}`);
-        if (dateStatus) {
-          setStatus(dateStatus, data.message, !data.available);
-          dateStatus.style.color = data.available ? '#1b5c52' : '#a33b31';
-        }
-      } catch (error) {
-        if (dateStatus) {
-          setStatus(dateStatus, error.message, true);
-        }
-      }
-    };
-
-    dateInput.addEventListener('change', checkAvailability);
-    const requestedDate = params.get('date');
-    if (requestedDate) {
-      dateInput.value = requestedDate;
-      checkAvailability();
-    }
-  }
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (submitting || !catalogLoaded) return;
-    submitting = true;
-    if (submitButton) submitButton.disabled = true;
-    const formData = new FormData(form);
-    const addOns = Array.from(form.querySelectorAll('input[name="addons"]:checked')).map((input) => input.value);
-    const payload = {
-      name: formData.get('name') || document.getElementById('name')?.value,
-      email: document.getElementById('booking-email')?.value || '',
-      contact: formData.get('contact') || document.getElementById('contact')?.value,
-      eventDate: formData.get('event-date') || document.getElementById('event-date')?.value,
-      eventTime: formData.get('event-time') || document.getElementById('event-time')?.value,
-      venue: formData.get('venue') || document.getElementById('venue')?.value,
-      packageName: (packageField && packageField.value) || formData.get('package') || document.getElementById('package')?.value,
-      children: formData.get('children') || document.getElementById('children')?.value,
-      notes: formData.get('notes') || document.getElementById('notes')?.value,
-      selectedStyle: selectedStyleField?.value || '',
-      addOns,
-      addOnItems: typeof selectedBookingItems === 'function' ? selectedBookingItems() : undefined,
-      modelId: document.getElementById('booking-model')?.value || null,
-      variantId: document.getElementById('booking-variant')?.value || null,
-      reservationFeeAccepted: document.getElementById('reservation-fee')?.checked || false,
-    };
-
-    try {
-      setStatus(bookingMessage, 'Submitting your reservation...', false);
-      const inquiry = document.getElementById('request-type')?.value === 'inquiry';
-      const result = await apiRequest(inquiry ? '/api/inquiries' : '/api/bookings', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      if (inquiry) { setStatus(bookingMessage, `${result.message} Inquiry ID: ${result.inquiryId}`, false); form.reset(); packageField.dispatchEvent(new Event('change')); return; }
-      bookingMessage.replaceChildren();
-      bookingMessage.dataset.state = 'success';
-      const codeRow = (label, value) => {
-        const row = document.createElement('div'); row.className = 'bb-code-row';
-        const name = document.createElement('span'); name.className = 'bb-code-label'; name.textContent = label;
-        const code = document.createElement('code'); code.className = 'bb-code'; code.textContent = value;
-        row.append(name, code); return row;
-      };
-      const intro = document.createElement('p'); intro.textContent = result.message; intro.className = 'bb-success-text';
-      const saveNote = document.createElement('p'); saveNote.className = 'bb-muted'; saveNote.textContent = 'Save this code securely.';
-      bookingMessage.append(intro, codeRow('Reference', result.booking.reference), codeRow('Private tracking code', result.booking.accessToken), saveNote);
-      const tracking = document.createElement('a');
-      tracking.className = 'btn btn-outline'; tracking.textContent = 'Manage this booking';
-      tracking.href = 'manage-booking.html#' + new URLSearchParams({ reference: result.booking.reference, token: result.booking.accessToken });
-      bookingMessage.append(tracking);
-      form.reset();
-      packageField.dispatchEvent(new Event('change'));
-      if (selectedStyleMessage) { selectedStyleMessage.textContent = ''; selectedStyleMessage.hidden = true; }
-      renderMiniCalendar('booking-mini-calendar', 'booking-mini-calendar-month', 'booking-mini-calendar-message');
-      if (dateStatus) {
-        setStatus(dateStatus, '', false);
-      }
-    } catch (error) {
-      setStatus(bookingMessage, error.message, true); if (window.BBNotify) BBNotify.error(error.message, { duration: 8000 });
-    } finally {
-      submitting = false;
-      if (submitButton && catalogLoaded) submitButton.disabled = false;
-    }
-  });
-}
-
 async function initFeedbackForm(form) {
   const feedbackMessage = document.getElementById('feedback-message');
+  apiRequest('/api/catalog').then(data=>{const select=document.getElementById('fb-pkg');if(select){const chosen=select.value;select.replaceChildren(new Option('Select rental',''),...data.packages.map(p=>new Option(p.name.replace(/ — Demo rental$/,''),p.name)));select.value=chosen;}}).catch(()=>{});
   const submitButton = form.querySelector('button[type="submit"]');
   let submitting = false;
   form.addEventListener('submit', async (event) => {
@@ -279,7 +147,7 @@ async function initLoginForm(form) {
       });
       setStatus(authMessage, result.message, false);
       setTimeout(() => {
-        window.location.href = 'profile.html';
+        window.location.href = safeAuthReturn();
       }, 600);
     } catch (error) {
       setStatus(authMessage, error.message, true);
@@ -313,7 +181,7 @@ async function initSignupForm(form) {
       });
       setStatus(authMessage, result.message, false);
       setTimeout(() => {
-        window.location.href = 'profile.html';
+        window.location.href = safeAuthReturn();
       }, 600);
     } catch (error) {
       setStatus(authMessage, error.message, true);
@@ -449,12 +317,14 @@ async function initAvailabilityCalendar() {
   monthCursor.setDate(1);
   let selectedDate = '';
   let unavailable = new Map();
+  let requestSequence=0;
   const requestedStyle = new URLSearchParams(window.location.search).get('style');
   const validStyles = ['Classic White Castle', 'Boho Pastel Playground', 'Rainbow Racer Slide', 'Carnival Pop Castle'];
   const selectedStyle = validStyles.includes(requestedStyle) ? requestedStyle : '';
-  styleLabel.textContent = selectedStyle || 'All rentals and styles';
+  styleLabel.textContent = selectedStyle || 'All rentals';
 
   const render = async () => {
+    const sequence=++requestSequence;
     const year = monthCursor.getFullYear();
     const month = monthCursor.getMonth();
     monthLabel.textContent = monthCursor.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
@@ -463,9 +333,11 @@ async function initAvailabilityCalendar() {
 
     try {
       const data = await apiRequest(`/api/availability/month?year=${year}&month=${month + 1}`);
+      if(sequence!==requestSequence)return;
       unavailable = new Map(data.unavailableDates.map((item) => [item.date, item.status]));
       setStatus(statusMessage, '', false);
     } catch (error) {
+      if(sequence!==requestSequence)return;
       unavailable = new Map();
       setStatus(statusMessage, `Availability could not be loaded: ${error.message}`, true);
       return;
@@ -497,11 +369,11 @@ async function initAvailabilityCalendar() {
       const state = unavailable.get(date);
       const isPast = dateObject < today;
       const cell = document.createElement('td');
-      cell.className = `day ${state ? (state === 'pending' ? 'pending' : 'booked') : 'available'}`;
+      cell.className = `day ${state ? 'booked' : 'available'}`;
       cell.dataset.date = date;
       cell.tabIndex = isPast ? -1 : 0;
       cell.setAttribute('role', 'button');
-      cell.setAttribute('aria-label', `${date}, ${state ? (state === 'pending' ? 'request pending' : 'unavailable') : 'available'}`);
+      cell.setAttribute('aria-label', `${date}, ${state ? 'unavailable' : 'available'}`);
       if (isPast) cell.setAttribute('aria-disabled', 'true');
       if (date === selectedDate) cell.classList.add('selected');
       const number = document.createElement('span');
@@ -509,7 +381,7 @@ async function initAvailabilityCalendar() {
       number.textContent = String(day);
       const label = document.createElement('span');
       label.className = 'lbl';
-      label.textContent = state ? (state === 'pending' ? 'Pending' : 'Unavailable') : 'Available';
+      label.textContent = state ? 'Unavailable' : 'Available';
       cell.append(number, label);
 
       const chooseDate = () => {
@@ -548,9 +420,7 @@ async function initAvailabilityCalendar() {
     });
     selectedStatus.textContent = available
       ? 'No booking request is currently recorded for this date. Final availability is confirmed by our team.'
-      : state === 'pending'
-        ? 'A booking request is pending for this date.'
-        : 'This date is unavailable.';
+      : 'This date is unavailable.';
     selectedStatus.dataset.state = available ? 'success' : 'error';
     bookingLink.hidden = !available;
     const params = new URLSearchParams({ date: selectedDate });
@@ -601,7 +471,7 @@ async function renderMiniCalendar(calendarId, monthId, messageId) {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const state = unavailable.get(date);
-      appendDay(`mini-day ${state ? (state === 'pending' ? 'pending' : 'booked') : 'available'}`, String(day));
+      appendDay(`mini-day ${state ? 'booked' : 'available'}`, String(day));
     }
   } catch (error) {
     console.error('Unable to load availability calendar:', error);
@@ -618,6 +488,7 @@ async function initReviews() {
   const limit = 6;
   let offset = 0;
   let selectedFilter = {};
+  let requestSequence=0;
 
   const renderReview = (review) => {
     const card = document.createElement('div');
@@ -639,10 +510,12 @@ async function initReviews() {
       reviewer.append(document.createElement('br'), meta);
     }
     card.append(stars, message, reviewer);
+    appendReviewCorrection(card,review.correction);
     return card;
   };
 
   const load = async (append) => {
+    const sequence=++requestSequence;
     loadMore.disabled = true;
     setStatus(status, 'Loading feedback...', false);
     const params = new URLSearchParams({ limit: String(limit), offset: String(append ? offset : 0) });
@@ -651,6 +524,7 @@ async function initReviews() {
 
     try {
       const data = await apiRequest(`/api/reviews?${params}`);
+      if(sequence!==requestSequence)return;
       if (!append) {
         grid.replaceChildren();
         offset = 0;
@@ -664,6 +538,7 @@ async function initReviews() {
       loadMore.disabled = false;
       updateReviewSummary(data.summary);
     } catch (error) {
+      if(sequence!==requestSequence)return;
       setStatus(status, `Feedback could not be loaded: ${error.message}`, true);
       loadMore.disabled = false;
     }
@@ -702,7 +577,7 @@ async function initHomepageReviews() {
   const grid = document.getElementById('home-testimonials');
   const status = document.getElementById('home-reviews-message');
   try {
-    const data = await apiRequest('/api/reviews?limit=3');
+    const data = await apiRequest('/api/reviews?limit=3&featured=true');
     if (!data.reviews.length) {
       status.textContent = 'Customer reviews will appear here when shared.';
       return;
@@ -724,12 +599,21 @@ async function initHomepageReviews() {
       event.textContent = review.event_type || 'Customer review';
       reviewer.append(name, document.createElement('br'), event);
       card.append(stars, message, reviewer);
+      appendReviewCorrection(card,review.correction);
       grid.append(card);
     });
   } catch (error) {
     console.error('Unable to load public reviews:', error);
     status.textContent = 'Customer reviews are temporarily unavailable.';
   }
+}
+
+function appendReviewCorrection(card,correction) {
+  if(!correction)return;
+  const note=document.createElement('p');
+  note.className='muted small';
+  note.textContent='Editorial note: '+correction;
+  card.append(note);
 }
 
 function initPackageBookingLinks() {
@@ -802,6 +686,7 @@ async function loadProfileData() {
     }
 
     const profile = await apiRequest('/api/customers/me');
+    void window.loadCustomerInquiries?.();
     const user = profile.user;
 
     const nameHeading = document.querySelector('.profile-summary-name');
@@ -852,10 +737,22 @@ async function loadProfileData() {
         const tag = document.createElement('span');
         tag.className = 'tag';
         tag.textContent = booking.status;
+        if(window.BBHoldCountdown){const timer=document.createElement('div');details.append(timer);BBHoldCountdown(timer,booking,()=>loadProfileData());}
         const manage = document.createElement('a'); manage.className = 'btn btn-outline';
         manage.href = 'manage-booking.html?reference=' + encodeURIComponent(booking.reference); manage.textContent = 'Manage booking';
         details.append(packageName, event, reference, manage);
-        item.append(details, tag);
+        const statusActions=document.createElement('div');statusActions.className='booking-status-actions';statusActions.append(tag);
+        const future=new Date(`${booking.event_date}T${booking.event_time}:00+08:00`)>new Date();
+        if(['pending','confirmed'].includes(booking.status)&&future){
+          const cancel=document.createElement('button');cancel.type='button';cancel.className='btn btn-outline booking-cancel';cancel.textContent='Cancel booking';
+          cancel.addEventListener('click',async()=>{
+            cancel.disabled=true;
+            try { if(await window.BBCancelBooking(booking))await loadProfileData(); }
+            finally { cancel.disabled=false; if(cancel.isConnected)cancel.focus(); }
+          });
+          statusActions.append(cancel);
+        }
+        item.append(details, statusActions);
         return item;
       });
       list.replaceChildren(...bookingItems);
@@ -896,3 +793,29 @@ async function loadProfileData() {
   header.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 })();
+function safeAuthReturn(){
+ const value=new URLSearchParams(location.search).get('next');
+ if(value){try{const target=new URL(value,location.href);if(target.origin===location.origin&&['booking.html','manage-booking.html','profile.html'].some(p=>target.pathname==='/Bouncebash_CS/'+p))return target.pathname+target.search;}catch{}}
+ return 'profile.html';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const footer=document.querySelector('.site-footer');
+  if(!footer)return;
+  try{
+    const {settings}=await apiRequest('/api/business-settings');
+    const details=settings?.contact;
+    if(!details||!Object.values(details).some(Boolean))return;
+    const section=document.createElement('div');section.className='footer-col';
+    const heading=document.createElement('h4');heading.textContent=details.name||'Contact';section.append(heading);
+    for(const [value,scheme] of [[details.email,'mailto:'],[details.phone,'tel:']]){
+      if(!value)continue;
+      const existing=footer.querySelector('a[href^="'+scheme+'"]');
+      const link=existing||document.createElement('a');
+      link.href=scheme+(scheme==='tel:'?value.replace(/[^+\d]/g,''):value);link.textContent=value;
+      if(!existing)section.append(link);
+    }
+    for(const value of [details.area,details.hours])if(value){const p=document.createElement('p');p.textContent=value;section.append(p);}
+    footer.append(section);
+  }catch{/* Retain the existing contact links if the settings request fails. */}
+});

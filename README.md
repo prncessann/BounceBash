@@ -1,118 +1,144 @@
-# Bounce Bash customer website
+# Download-and-run instructions
 
-This update completes the customer backend and its operational API. It preserves every file in `Bouncebash_Admin/` exactly as uploaded. That admin panel remains the supplied static prototype: it has not been connected or redesigned. Staff operations are available through authenticated API calls and the included command-line tool.
+Extract this ZIP directly into your existing BounceBash project folder and replace the program files. The ZIP deliberately contains no .env or live database, so extraction preserves your current settings, accounts and bookings automatically. Double-click START_WINDOWS.bat to install dependencies if needed, create any missing local settings and start the application. No manual file copying is needed. For a fresh installation, the server creates the database and demonstration catalog automatically. Requires Node.js 22.13+ or 24.
 
-## Start locally on Windows
+# BounceBash — customer booking update
 
-1. Install Node.js 22 or 24 and extract this ZIP completely.
-2. Open the extracted **BounceBash** folder. It contains `package.json` and `server.js`.
-3. Double-click **START_WINDOWS.bat**. On the first run it installs dependencies, creates a private local `.env`, and starts the server. Keep its window open.
-4. Open **http://localhost:3000/Bouncebash_CS/**. Use the server URL, not Live Server or a directly opened HTML file. XAMPP/MySQL is not required for this version.
+This release implements the agreed customer booking wizard and pricing rules. The current Admin and customer site share database records. The existing staff sign-in and sidebar design are retained. Customer booking, quote and payment rules are enforced on the shared backend.
 
-Alternatively, from a terminal in this folder:
+## Run on Windows
 
-```sh
+Extract the ZIP completely. Open the **BounceBash** folder that contains `package.json`, then run:
+
+```powershell
 npm ci
 npm run setup
 npm start
 ```
 
-Stop with Ctrl+C. Existing `.env` files are never overwritten by setup. On a custom port, update both `PORT` and `PUBLIC_URL`. If a copied native SQLite dependency fails, delete `node_modules` and run `npm ci` on your own machine; do not copy another operating system's `node_modules`.
+Open **http://localhost:3000/Bouncebash_CS/**. Alternatively double-click `START_WINDOWS.bat`. Keep the server terminal open. Use Node.js 22.13+ or 24, not Live Server; XAMPP/MySQL is not needed. Run commands inside this folder, not its parent. If port 3000 is occupied, stop your previous server with Ctrl+C. To use another port, change both `PORT` and `PUBLIC_URL` in `.env`.
 
-The included `data/bouncebash.sqlite` is the database from your newest upload, without test records added by this work. Startup performs additive schema migrations and invalidates legacy plaintext session cookies once. Back up an existing working database before replacing/upgrading a project. The `BOUNCEBASH_DB_PATH` environment variable remains supported.
+Keep a backup of your current project, `.env` and database before replacing files. Private `.env` credentials and installed dependencies are deliberately excluded. Setup creates a new local `.env` only if none exists. Retain your existing `.env` when continuing an existing deployment. This download excludes the live SQLite database so extracting over an existing project cannot overwrite bookings. A fresh installation creates its database automatically. Startup migrates a working copy in place; SQLite upgrades rebuild the bookings table to allow an absent historical child count, preserving IDs, links and existing values. Back up before upgrading.
 
-## Implemented customer flows
+## Booking behavior
 
-- Signup, login/logout, safe profile changes, password change with old-session revocation, authenticated email changes, verification and single-use password-reset links.
-- Three catalog zones, configurable models, supported variants, package/model compatibility, capacities, add-on options and quantities.
-- Dynamic catalog prices/inclusions/duration and server-calculated PHP quotes with exact centavos, 50% deposit rounding, and historical booking snapshots.
-- Separate inquiry submission, customer inquiry history, staff replies and idempotent conversion to a booking.
-- Pending bookings, private guest tracking, account-owned history, rescheduling, cancellation, confirmation and completion rules; pending-hold expiry and manual date blocks.
-- Payment-reference submission, authorized verification/rejection and external-refund recording. Verified amounts determine payment status and balance. Incomplete deposits are explicitly labelled **Partial Deposit**.
-- Reviews require both publication consent and operator approval; newsletter subscriptions have private unsubscribe links.
-- Private notification outbox, configured provider delivery with leases/retries and idempotency keys; safe notification metadata.
-- Protected staff contracts for catalog setup, quotes, booking filters, payment verification, date blocks, inquiry workflow, moderation, operational reports and immutable audit history.
-- Explicit public-file allowlists; origin/write protections; configurable persistent rate limits; hashed session/guest/account tokens; production cookies; safe errors and response headers.
+1. Select a photographed rental and a supported synthetic style/color. Optional zone filters help browse.
+2. Enter event details, NCR city/municipality, complete address, additional hours and optional notes.
+3. Choose free ball colors where applicable, optional balloon arches or a backdrop. Back / Review booking controls retain entered values.
+4. The final Review step shows the price breakdown after all questions. Review it, acknowledge the deposit and submit. Sign-in is required. The booking appears automatically on the customer's profile. Review can also send a staff inquiry without placing a hold. See My Inquiries in the profile for status and replies.
 
-## Configuration that still needs YOUR values
+Invalid required fields turn red with an inline explanation. Draft choices are saved for up to 24 hours in the same browser tab, including across sign-in. Sample colors are illustrative rather than photographs of every actual material variant.
 
-The code does not invent business data or credentials:
+### Demonstration prices
 
-| Value | Local behavior until configured |
+Local development supplies five demo offers only when those rental names do not already exist. Repeated startup does not overwrite existing rental records or operator prices. These prices and four-hour durations are approved for the school demo. Photos are illustrative, and live business rates remain unverified. Existing package and quotation history is preserved.
+
+| Rental | Included hours | Base price |
+| --- | ---: | ---: |
+| Classic White Castle | 4 | ₱6,500 |
+| Boho Pastel Playground | 4 | ₱5,500 |
+| Rainbow Racer Slide | 4 | ₱7,500 |
+| Carnival Pop Castle | 4 | ₱4,500 |
+| Pastel Ball Pit | 4 | ₱3,500 |
+
+| Extra | Price / rules |
 | --- | --- |
-| Approved package prices, rental hours, inclusions | Displayed as request-a-quote; staff can set approved catalog prices or a booking-specific quote |
-| Rental models, capacities, variants and package compatibility | Three zones are seeded; no invented models or color combinations are published |
-| Add-on unit prices/options | Only configured options/prices are offered/quoted; unconfigured values require staff follow-up |
-| Delivery charges or special-request adjustments | Staff adds an explicit explained final quote before payment; no unsupported fee is guessed |
-| Email delivery provider | Messages remain in the PRIVATE outbox; no email is falsely reported as delivered |
-| Production database and public domain | Local SQLite works; production requires PostgreSQL/Supabase and HTTPS configuration |
+| Ball-color selection | +₱0 for rentals with balls; dropdown, no quantity |
+| Balloon arch | +₱400 per arch; 1–3 distinct colors included; quantity 1–20 |
+| Backdrop | +₱800, same for every event; Other requires a short description |
+| Additional rental hour | +₱600 per whole hour; 0–12 additional hours |
+| Number of children | No input or charge; equipment safety limits still apply |
 
-Unpriced booking requests can be recorded for team follow-up but cannot accept payment references until a total is set. Ordinary inquiries never reserve dates. The preserved capacity policy is **one active booking per date across the business**; times and models are recorded, but parallel rentals are not promised. Pending holds expire after 48 hours by default (`PENDING_HOURS`). Rescheduling returns the booking to pending and requires confirmation again. Cancellation/expiry do not automatically refund money; staff must resolve recorded payments. These rules are documented explicitly rather than assuming the business has multiple interchangeable units.
+Table styling and balloon garland are unavailable for new bookings. Historical selections remain stored. The public Styles tab is removed; old `styles.html` links redirect to Rentals.
 
-The proposal lists three zones while referring to four packages. The existing four package names are retained. Models and package relationships are configured separately; no fourth zone is invented.
+| Delivery fee | NCR city / municipality |
+| --- | --- |
+| ₱200 | Quezon City |
+| ₱300 | Caloocan, Malabon, Mandaluyong, Manila, Marikina, Pasig, San Juan, Valenzuela |
+| ₱400 | Las Piñas, Makati, Muntinlupa, Navotas, Parañaque, Pasay, Pateros, Taguig |
 
-## Staff operations without changing the admin pages
+These are fixed demo zones, not road-distance estimates. Full venue address remains required. Setup and pickup are included in the demo offer; delivery is added once in the displayed total.
 
-`npm run setup` creates a random `OPERATOR_API_KEY` in `.env`. Keep it private and never place it in customer HTML/JS. All `/api/operator/*` routes require `Authorization: Bearer <key>`.
+### Notes, payments and holds
 
-The CLI reads the key internally:
+- Empty/whitespace-only notes: the displayed total is final, including extras and delivery; the deposit is 50%, rounded up to the centavo.
+- Any nonempty note: show the known subtotal and **pending admin quotation**. No final total, deposit or payment submission is available until an authorized operator sets the final amount. The original breakdown remains in the quote snapshot. Backdrop Other text is structured customization and does not alone trigger this rule.
+- Submission immediately reserves the whole date across the business for **three hours**, including time awaiting quotation. Public calendars show Unavailable, while the owner sees the actual approval state and server-based countdown. No parallel rentals are promised.
+- Expiry releases a pending date. Confirmed bookings never expire through this timer. The backend checks expiry on API requests and every 30 seconds while running. Reloading does not renew a hold; an explicit valid reschedule starts a new pending hold and requires confirmation again.
+- Payments use manual transaction-reference entry. No customer proof upload or OCR is offered. A reference is pending until staff verifies it; it never automatically confirms the booking. Historical proofs remain stored behind authenticated access.
+- Cancelled/expired bookings retain payment records. Staff can record a late verification without reserving the date again; refunds require separate handling. No automatic transfer, charge, refund or reconfirmation occurs.
+- The highlighted Print receipt button appears only for verified payments. It prints a system payment summary, not an official receipt.
+- Customer access requires the signed-in owner. Private tracking codes and guest-token access are removed. Historical guest records remain accessible to authorized staff and are not automatically claimed by matching names/phone numbers.
 
-```sh
-npm run operator -- GET /catalog
-npm run operator -- GET /inquiries
-npm run operator -- GET /bookings
-npm run operator -- GET /notifications
+## Configuration and staff operations
+
+`DEMO_CATALOG=true` enables local demo bootstrap. It defaults on in development and is always disabled in production. Disabling bootstrap does not delete already-created demo offers; deactivate them before live use. Configure real offers, supported model mappings and variants using the protected operator APIs. A model mapped to exactly one priced package can be booked without a separate package dropdown. The optional `includesBalls` boolean on model creation/update controls free ball-color choices. Demo offer, delivery, extra-hour and add-on policy constants are in `backend/demo-booking-catalog.js` and `backend/booking-rules.js`.
+
+`OPERATOR_GUIDE.md` describes existing operator endpoints and CLI. Finalize notes quotations with authenticated `PUT /api/operator/bookings/:reference/quote`, body `{"total":"7000.00","note":"Approved quotation explanation"}`. The existing admin UI is unchanged; this endpoint remains available for staff tools. New fixed add-on rules take precedence over legacy add-on pricing/options fields; historic totals are never recomputed.
+
+To create a staff account, use `node scripts/create-staff.js EMAIL "FULL NAME" "PASSWORD"` with your own values. Existing staff accounts in the database remain available. Keep `.env` and `OPERATOR_API_KEY` private.
+
+The school demo retains the supplied GCash configuration for recording synthetic references. The receiving account and QR remain unverified. In payment-config.js, bank transfer appears only when businessApproved is true and bankName, accountName and accountNumber are all filled. Cash follows the same approval rule and also requires instructions. Without a configured method, customers see the contact-team instructions and the reference form is hidden. Keep this browser configuration limited to public receiving instructions. Notification emails require a configured trusted delivery bridge (`NOTIFICATION_WEBHOOK_URL` and key). Without one, notifications remain queued; this release does not invent email delivery credentials.
+
+### PostgreSQL / deployment
+
+SQLite is the default local database. For PostgreSQL set `DB_DRIVER=postgres`, a valid private `DATABASE_URL`, TLS configuration and an HTTPS `PUBLIC_URL` in production. Schema migrations 001–003 apply automatically; `npm run migrate` initializes the schema explicitly. `npm run migrate:sqlite -- PATH --confirm-empty-destination` migrates a backed-up SQLite source into an empty PostgreSQL destination. Do not use a file database for a hosted serverless production deployment. `npm run build` builds an explicit public asset directory without database/config/source files.
+
+## Verification
+
+Run `npm test` and `npm run test:postgres`. The second command uses embedded PostgreSQL-compatible PGlite, not a live production PostgreSQL/Supabase service. `TEST_RESULTS.md` identifies tested behavior and limitations; included logs contain the actual test runs. See BACKEND_CS_AUDIT_REPORT.md for the latest real Edge browser results, isolated provider checks and remaining hosted verification.
+
+### Customer layout refinement
+
+The booking wizard now uses a single column with the price breakdown only in the final Review step. The redundant paid-extras button and the “Synthetic demo rates and options.” caption are removed. Customer card grids use flexible tracks and consistent spacing. Cancellation is opened from the profile button beneath the booking status, including paid pending/confirmed future bookings; it uses a reason dialog rather than a separate Manage Booking section. Existing recorded payments remain attached and refunds are handled separately.
+
+### Final controls fix
+
+Restart your existing server after extracting this update. The backend now separates price-preview/read quotas from authenticated booking writes; old .env settings remain compatible. Manage Booking displays feedback beside each action, prevents repeat clicks, and retains manual payment verification. BACKEND_REVIEW.md lists tested controls, remaining real-service configuration and the visual-browser limitation.
+
+
+## Windows updates and operational verification
+
+For an existing installation, retain your current .env and locate the database used by its current server before starting the updated code. The startup line reports the resolved absolute SQLite path or the database driver. An explicit BOUNCEBASH_DB_PATH takes precedence over DB_PATH. A relative path resolves from the server's working directory. The default is data/bouncebash.sqlite within this application folder. Run START_WINDOWS.bat or run commands from the application folder to keep relative paths stable.
+
+Before the first startup after an update, create a backup of the existing database. For SQLite, confirm DB_DRIVER=sqlite and point BOUNCEBASH_DB_PATH at the existing file in the current shell or .env. Run npm.cmd run backup -- PATH_TO_NEW_BACKUP.sqlite. The command opens the existing file read-only and refuses an existing output file. For PostgreSQL, take and verify a provider snapshot or pg_dump before startup. Leave the original data and configuration in place when extracting the release.
+
+Run python scripts/package-release.py PATH_OUTSIDE_THE_APP.zip to create a Windows-compatible update archive. The output must be a new file. The operation checks all admin hashes and excludes environment files, database files and installed dependencies.
+
+### Email bridge and serverless scheduling
+
+Configure PUBLIC_URL to the canonical HTTPS origin. Set NOTIFICATION_WEBHOOK_URL to a trusted HTTPS endpoint and NOTIFICATION_WEBHOOK_KEY to its private bearer token. Locally, a loopback HTTP bridge can capture synthetic messages. The bridge accepts a JSON POST containing id, recipient, kind and message data, sometimes including url. Return 2xx only after durable acceptance, apply Idempotency-Key to deduplicate, and treat all payloads as private. The worker sends no redirects, times out each request after ten seconds, retries with backoff and stops after eight failed attempts. Staff can inspect the delivery status without retrieving the private message body.
+
+Run npm.cmd run outbox -- preflight to validate the configuration without opening a database or making a network request. A fresh local install with no bridge reports it as unconfigured. An isolated loopback capture is exercised by the account and browser tests.
+
+Vercel invokes GET /api/cron/notifications every five minutes using its CRON_SECRET bearer credential. Store it only as a server-side environment variable and use a distinct value of at least 32 characters. This interval requires a plan that supports sub-daily execution. For a host without that support, remove the Vercel cron entry from that deployment configuration and schedule the same authenticated GET through an external scheduler every five minutes. Persistent Node deployments also have an in-process outbox timer. Verify the scheduled invocation and link delivery against an isolated hosted environment before enabling customer email. [Vercel cron guide](https://vercel.com/kb/guide/ship-a-express-app-on-vercel)
+
+### Isolated remote PostgreSQL and Edge browser checks
+
+For remote verification, provision a disposable TLS-enabled database with _test or -test in its name and no bouncebash schema. Set BOUNCEBASH_TEST_DATABASE_URL from your private environment and run node scripts/verify-remote-postgres.js --confirm-disposable. If using a private certificate authority, load DATABASE_CA_CERT privately. The smoke command installs the schema into that disposable database and leaves it available for inspection. It verifies TLS, the migration version, the active-date index and audit protection with a rolled-back synthetic transaction. npm.cmd run test:postgres still runs embedded PGlite.
+
+With Microsoft Edge installed, install the optional browser tooling outside the application and run the browser script:
+
+```powershell
+npm.cmd install --prefix "$env:TEMP/bouncebash-browser-tools" --no-save --ignore-scripts playwright
+$env:BOUNCEBASH_PLAYWRIGHT_MODULE = "$env:TEMP/bouncebash-browser-tools/node_modules/playwright"
+node scripts/browser-smoke.cjs
 ```
 
-See **OPERATOR_GUIDE.md** for configuration and workflow examples. These endpoints are integration contracts for separately authorized future admin UI work; the old admin buttons do not suddenly become functional.
+The browser script uses synthetic accounts, a disposable SQLite file and a local capture bridge. Set BOUNCEBASH_BROWSER_CHANNEL=chrome to use installed Chrome. It leaves application dependencies unchanged.
 
-## Email and local account-recovery testing
+## Shared Admin and customer site
 
-Configure `NOTIFICATION_WEBHOOK_URL` and optionally `NOTIFICATION_WEBHOOK_KEY` for a trusted delivery bridge that sends email. The server POSTs JSON containing `id`, `recipient`, `kind`, message fields and sometimes a private one-use URL. It sends a stable `Idempotency-Key` and optional bearer authorization. The bridge must return 2xx only after accepting delivery, protect these payloads, and deduplicate that key. The included automated tests use a local fake provider and send no real email.
+Open /Bouncebash_Admin/login.html on the same application origin as the customer site and use an existing staff account. The dashboard, booking queue, calendar, reports, rental catalog, article editor, review moderation, and business settings use the shared backend. Existing bookings and transaction references appear without an import step.
 
-- On the local persistent server, the worker runs every 30 seconds.
-- In serverless hosting, configure a trusted scheduler to POST `{}` to `/api/operator/maintenance` with the operator bearer key, normally every minute. Do not rely on background timers after an HTTP response. Each call handles up to four messages with bounded timeouts.
-- `npm run outbox -- list` shows delivery status without private links.
-- `npm run outbox -- deliver` attempts a configured delivery batch.
-- **Local tests only:** `npm run outbox -- show-links` prints private links so you can exercise verification, reset, guest management and unsubscribe without an email account. This is disabled in production. Do not share that terminal output.
+Before updating an existing SQLite installation, keep the existing .env and confirm the resolved database path. With the server stopped, set the same SQLite path and run the corrected read-only backup before starting the updated application:
 
-## PostgreSQL / Supabase / Vercel
-
-The same business routes support local SQLite and PostgreSQL; production cannot silently fall back to local SQLite. The PostgreSQL schema lives in `migrations/001_postgres.sql` under the private **bouncebash** schema. Tables have RLS enabled; no public browser grants or elevated frontend keys are added. The backend connects using an appropriately secured database-owner credential. Keep this schema out of the Supabase exposed Data API schemas unless you intentionally add and test access policies.
-
-1. Create your own Supabase/PostgreSQL project. Obtain its trusted server-side connection URL (use the connection method/pooler appropriate for your hosting network). No live project was created by this update.
-2. Set `DATABASE_URL`, `DB_DRIVER=postgres`, `NODE_ENV=production`, `PUBLIC_URL=https://your-domain`, a unique `OPERATOR_API_KEY`, and provider settings as needed. Keep these in hosting environment variables. Database TLS verification is enabled; set `DATABASE_CA_CERT` if your provider requires its CA. TLS cannot be disabled in production.
-3. Run `npm run migrate` against the intended database. First initialization creates the versioned schema under a migration advisory lock. Later starts do not rerun the initial migration or destroy data.
-4. To transfer an existing SQLite database into a **new otherwise-empty** destination, make a backup and run:
-
-```sh
-npm run migrate:sqlite -- /absolute/path/to/backup.sqlite --confirm-empty-destination
+```powershell
+$env:DB_DRIVER = 'sqlite'
+$env:BOUNCEBASH_DB_PATH = 'PATH_TO_EXISTING_BOUNCEBASH.sqlite'
+npm.cmd run backup -- 'PATH_TO_NEW_BACKUP.sqlite'
+npm.cmd run migrate
+npm.cmd start
 ```
 
-The importer opens SQLite read-only, preserves business records/IDs, resets PostgreSQL sequences, and refuses to overwrite a destination containing business data. Only automatic catalog seeds are replaced in an empty destination. Sessions/recovery tokens and sensitive recovery-email payloads are not imported: users must sign in/request new links. Re-running an import against populated data is refused.
-
-5. For Vercel, select this folder as the project root. `vercel.json`, `api/index.js`, and `npm run build` provide the function entry and an explicit public output directory. Configure environment variables and the notification scheduler. The `public` build output contains only approved public files; databases, secrets and backend source are excluded.
-6. Verify deployed login, origins, cookies, persistence, provider delivery, private-file denial and backups before accepting real bookings. Preview deployments need their own correct `PUBLIC_URL` and preferably a separate test database.
-
-The PostgreSQL SQL/business flows were tested using embedded PostgreSQL (PGlite). A live Supabase connection and a real Vercel deployment were **not** exercised because no credentials/project were supplied. The configuration and migration code are included; this is not a claim that your external accounts are already configured.
-
-## Tests
-
-```sh
-npm test
-npm run test:postgres
-```
-
-These use isolated temporary databases and synthetic data. The second command tests PostgreSQL SQL/transactions using a local embedded PostgreSQL engine; it does not contact Supabase. DOM integration tests exercise the real customer scripts against an isolated local server using jsdom. They do not substitute for visual, mobile, accessibility or cross-browser checks. See **TEST_RESULTS.md** for actual results and limitations.
-
-## Backup and restore
-
-For SQLite:
-
-```sh
-npm run backup
-```
-
-This makes a consistent online SQLite backup outside the public mounts. To restore: stop the server, preserve a separate backup of the current database, select the verified backup through `BOUNCEBASH_DB_PATH` (or replace the stopped local database file), and restart. Never restore over an open database or leave mismatched `-wal`/`-shm` sidecars. Backup reopening/integrity is tested. PostgreSQL/Supabase backups should use provider backups or `pg_dump`/`pg_restore`; test recovery in a separate database before replacing production data.
-
-GitHub Pages can show static pages only; it does not host this API/database. The site must run through Node locally or the configured full backend deployment for forms to work.
+Use `npm.cmd run migrate` only after verifying the backup and configured target. It creates the shared content and configuration tables and imports the seven bundled legacy article records without replacing subsequent edits. Use the same server and database for both sites. Live email and remote PostgreSQL setup remain under **Windows updates and operational verification**. See ADMIN_CS_INTEGRATION_REPORT.md for metric definitions, coverage and limitations.

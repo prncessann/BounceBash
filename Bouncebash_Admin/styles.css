@@ -402,3 +402,25 @@ aside.nav-open .admin-nav-toggle span:nth-child(3) { transform: translateY(-7px)
 .rpt .chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .rpt .chips .chip{flex:none;white-space:nowrap;font-family:inherit;cursor:pointer}
 .rpt .chips .chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.admin-form,.admin-stack,#admin-content{display:grid;gap:12px;min-width:0}
+#admin-content,.admin-stack{grid-template-columns:minmax(0,1fr)}
+#admin-content>*,.admin-stack>*{min-width:0;max-width:100%}
+.admin-form{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));align-items:end;margin:12px 0}
+.admin-form label{min-width:0}
+.admin-form .inp{width:100%;max-width:100%;display:block}
+.admin-form input[type=checkbox]{width:auto}
+.admin-form textarea{min-height:5em}
+.admin-dialog{width:min(760px,calc(100% - 24px));max-height:90vh;overflow:auto;color:inherit}
+.admin-dialog::backdrop{background:#0007}
+.admin-dialog dt{font-weight:600}
+.admin-dialog dd{margin:0 0 9px;overflow-wrap:anywhere}
+.admin-dialog pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.admin-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.admin-metrics strong{font-size:1.35rem}
+.admin-calendar{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.admin-chart meter{width:100%}
+[data-admin-page] .tw{overflow:auto}
+[data-admin-page] button:focus-visible,.admin-dialog button:focus-visible{outline:2px solid #84633c;outline-offset:3px}
+@media(max-width:850px){.admin-calendar{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){main[data-admin-page]{width:100%}[data-admin-page] .top,[data-admin-page] .acts{flex-wrap:wrap}}
+@media print{[data-admin-page] button,[data-admin-page] form,#admin-refresh-time{display:none!important}}

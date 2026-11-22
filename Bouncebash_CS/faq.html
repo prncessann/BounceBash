@@ -11,7 +11,7 @@
   <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
-    <a href="styles.html">Styles</a>
+    
     <a href="packages.html">Packages</a>
     <a href="add-ons.html">Add-ons</a>
     <a href="gallery.html">Gallery</a>
@@ -39,23 +39,23 @@
 <section class="faq-list" id="faq-list">
   <div class="faq-item">
     <h2>How do I book?</h2>
-    <p>Choose a package and any add-ons, submit the booking request, then pay the 50% reservation fee to secure your date.</p>
+    <p>Sign in, choose your rental and extras, answer the event questions, and review your price before submitting. Your date is held for three hours while awaiting confirmation.</p>
   </div>
   <div class="faq-item">
     <h2>How much is the reservation fee?</h2>
-    <p>The reservation fee is 50% of the package price. It secures your date.</p>
+    <p>The required deposit is 50% of the final total, including delivery and selected extras. The team verifies your payment reference before confirming the booking.</p>
   </div>
   <div class="faq-item">
     <h2>How quickly will you confirm my request?</h2>
-    <p>We will confirm within 24 hours.</p>
+    <p>Check your profile for quotation, payment and confirmation updates. Pending requests hold the date for three hours, including time awaiting a quotation.</p>
   </div>
   <div class="faq-item">
     <h2>Do you deliver and set up?</h2>
-    <p>Yes. Delivery, setup and pick-up are part of every rental. Delivery charges depend on your venue, so ask us when you check availability.</p>
+    <p>Setup and pickup are included in the listed rental. Delivery is added to the final total: ₱200 in Quezon City, or ₱300–₱400 in other listed NCR locations.</p>
   </div>
   <div class="faq-item">
     <h2>Is someone there to supervise?</h2>
-    <p>Yes. We provide on-site supervision with every rental.</p>
+    <p>Follow the equipment’s safety rules and confirm supervision arrangements with the team before your event.</p>
   </div>
   <div class="faq-item">
     <h2>Can I add extras later?</h2>
@@ -77,15 +77,9 @@
     <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
-      <img src="../assets/logo/instagram.png" alt="Instagram">
-    </a>
-    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
-      <img src="../assets/logo/facebook.png" alt="Facebook">
-    </a>
-    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
-      <img src="../assets/logo/tiktok.png" alt="TikTok">
-    </a>
+    
+    
+    
   </div>
   </div>
   <div class="footer-col">
@@ -118,23 +112,7 @@
   </div>
 </footer>
 
-<script>
-  (function () {
-    var input = document.getElementById('faq-search');
-    var items = [].slice.call(document.querySelectorAll('#faq-list .faq-item'));
-    var empty = document.getElementById('faq-empty');
-    input.addEventListener('input', function () {
-      var q = input.value.trim().toLowerCase();
-      var shown = 0;
-      items.forEach(function (item) {
-        var match = item.textContent.toLowerCase().indexOf(q) > -1;
-        item.hidden = !match;
-        if (match) shown++;
-      });
-      empty.hidden = shown > 0;
-    });
-  })();
-</script>
+<script src="faq-interactions.js"></script>
 
 <script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>

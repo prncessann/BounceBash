@@ -11,7 +11,7 @@
   <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
-    <a href="styles.html">Styles</a>
+    
     <a href="packages.html">Packages</a>
     <a href="add-ons.html">Add-ons</a>
     <a href="gallery.html" class="active">Gallery</a>
@@ -76,15 +76,9 @@
     <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
-      <img src="../assets/logo/instagram.png" alt="Instagram">
-    </a>
-    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
-      <img src="../assets/logo/facebook.png" alt="Facebook">
-    </a>
-    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
-      <img src="../assets/logo/tiktok.png" alt="TikTok">
-    </a>
+    
+    
+    
   </div>
   </div>
   <div class="footer-col">
@@ -117,35 +111,7 @@
   </div>
 </footer>
 
-<script>
-(function () {
-  var PAGE = 9, filter = 'all', shown = PAGE;
-  var items = [].slice.call(document.querySelectorAll('#gallery-grid a'));
-  var btn = document.getElementById('load-more'), empty = document.getElementById('gallery-empty');
-  function render() {
-    var n = 0;
-    items.forEach(function (a) {
-      var ok = filter === 'all' || a.getAttribute('data-cat').split(' ').indexOf(filter) > -1;
-      var vis = ok && n < shown;
-      if (ok) n++;
-      a.hidden = !vis;
-    });
-    btn.parentNode.hidden = n <= shown;
-    empty.hidden = n > 0;
-  }
-  document.querySelectorAll('[data-filter]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      filter = b.getAttribute('data-filter'); shown = PAGE;
-      document.querySelectorAll('[data-filter]').forEach(function (o) {
-        o.className = 'btn ' + (o === b ? 'btn-dark' : 'btn-outline');
-      });
-      render();
-    });
-  });
-  btn.addEventListener('click', function () { shown += PAGE; render(); });
-  render();
-})();
-</script>
+<script src="gallery-interactions.js"></script>
 <script src="site.js"></script><script src="catalog-tools.js"></script>
 </body>
 </html>

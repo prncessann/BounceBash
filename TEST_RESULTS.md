@@ -1,44 +1,50 @@
-# Validation results
+# Booking release verification
 
-Validation date: 17 November 2026. Runtime: Node.js v24.22.1 on Linux.
-
-## Executed successfully
+Tested against the supplied BounceBash(4).zip source. Synthetic accounts, venues, transfers and future event dates were used in isolated temporary databases. Tests never contacted a real payment provider or added records to the shipped database.
 
 | Check | Result |
 | --- | --- |
-| Clean dependency installation (`npm ci`) | Passed with the supplied lockfile; native SQLite dependency installed successfully |
-| SQLite suite (`npm test`) | 113 passed, 0 failed |
-| PostgreSQL suite (`npm run test:postgres`) | 112 passed, 0 failed using embedded PostgreSQL/PGlite |
-| Customer DOM integration | Included in the suites; catalog, quotes, inquiry submission, guest tracking, cancellation and account-help paths passed |
-| SQLite backup/reopen and integrity | Passed |
-| SQLite-to-PostgreSQL import | Preserved synthetic legacy records and refused a replay into a populated destination |
-| Concurrent requests for one date | Exactly one booking created; competing requests rejected |
-| Expired pending hold | Released by the actual maintenance path using an isolated SQLite test fixture |
-| Account and booking ownership | Unauthorized customer and guest access denied |
-| Payment handling | Pending/verified balances, duplicate reference, overpayment, confirmation prerequisites and explicit refund recording passed |
-| Notification behavior | Local fake provider, stable idempotency keys, token delivery and retained failures passed; no real outgoing email |
-| Database transactions | Rollback and nested savepoints passed in both database modes |
-| Audit immutability | Edit/delete rejection passed |
-| PostgreSQL access schema | RLS enabled on application tables; elevated connection remains server-side |
-| Origin, body, input and private-file protections | Tested malformed values/objects, oversized bodies, forbidden origins, exposed-file paths and unauthorized staff calls |
-| Abuse limits | Excess requests returned 429; spoofed forwarded-IP header did not bypass limits |
-| Production cookie configuration | HTTPS required and Secure cookies enabled |
-| Production dependency audit (`npm audit --omit=dev`) | No known vulnerabilities reported by the registry at validation time; see DEPENDENCY_AUDIT.json |
-| Public output build | Passed; backend source, database, configuration and tests excluded |
-| Customer local resource references | No missing file targets found |
-| Original admin files | All 11 files match the uploaded ZIP byte-for-byte |
-| Supplied SQLite file | Preserved byte-for-byte; test fixtures used separate temporary databases |
+| `npm test` (SQLite) | 77 passed, 0 failed, 0 skipped |
+| `npm run test:postgres` (PGlite) | 77 passed, 0 failed, 0 skipped |
+| JavaScript syntax | All shipped JavaScript files syntax checked |
+| Public asset build | Passed |
+| Dependency audit | 0 reported vulnerabilities at verification time |
+| Original admin integrity | All 15 files unchanged, SHA-256 compared directly with uploaded ZIP |
+| Original database integrity | Live database omitted from update ZIP to preserve installed bookings; copied uploaded database upgrade passed integrity and foreign-key checks |
+| Demo seed | Repeated seed produced five records without overwriting operator pricing |
+| Parallel read smoke check | 30 concurrent catalog reads completed without errors in each database test run; timings in logs |
+| Chromium visual testing | Blocked: Chromium failed to start; no visual pass claimed |
 
-Counts include Node's parent test entries and overlapping tests run in both modes. They are not counts of unique product features or a claim of complete production coverage. The extra SQLite case simulates expiry by changing an isolated test fixture's hold timestamp; PostgreSQL executes the shared maintenance/query code but does not repeat that direct SQLite fixture manipulation.
+The database-specific checks differ slightly between runs. Both drivers execute the booking, hold, migration and customer DOM suites. PGlite verifies PostgreSQL SQL/migration behavior but is not a live remote PostgreSQL/Supabase integration test.
 
-Full output is in `TEST_LOCAL.log` and `TEST_POSTGRES.log`. `TEST_PERFORMANCE.json` records the local read-only catalog probe: 100 requests at concurrency 10, no HTTP errors; median 6.34 ms, p95 8.19 ms, maximum 12.08 ms. These timings do not measure production capacity, provider latency or a sustained mixed workload.
+## Functional coverage
 
-## Not verified externally
+- Item/variant compatibility; all five demo offers and 17 location fees; server-owned totals, deposit rounding, additional hours and no child charge.
+- Free ball colors, rejection of ball quantities, 1–3 distinct arch colors and per-arch quantity pricing, fixed backdrop rates and required Other text.
+- Empty versus nonempty notes, payment blocked until final quotation, unauthorized quote rejection, preserved original breakdown after approval.
+- Sign-in before submission, owner isolation, automatic profile listing, guest-token rejection, valid staff-session access to existing operational APIs.
+- Immediate availability blocking and concurrent double-booking prevention; three-hour server timestamps, expired-date release, confirmed-booking protection, retained payments and late staff verification without reactivating the date.
+- Manual payment references, rejection of binary image submissions, deposit verification before confirmation, cancellation with retained funds, verified-only printable summary.
+- Wizard photo cards, required-field errors, Back/Continue value preservation, arch/backdrop conditional fields, Back / Review, acknowledgement and full submission against a real test backend.
+- Timer derives elapsed time from the server plus monotonic elapsed time, refresh/remount uses the original expiry, local wall-clock skew does not grant additional time.
+- Removal of Styles navigation, private-code UI and receipt upload/OCR controls.
 
-- Actual Supabase account/connection, hosting migration, database network/TLS conditions and Vercel deployment were not exercised. No credentials or live project were supplied. PostgreSQL behavior was tested with a real embedded PostgreSQL engine, not a live Supabase service.
-- No real payment transfer, refund or payment gateway was used. The implementation deliberately tracks manually verified external transactions.
-- No real email/SMS provider was configured or contacted. The delivery contract and failure handling were tested against a local fake HTTP provider.
-- DOM tests execute the real scripts but do not render screenshots or certify desktop/mobile layout, visual design, browser compatibility, Lighthouse scores, or accessibility. Full browser launch was restricted in this environment.
-- A restore from the generated SQLite backup was reopened and checked; provider-level PostgreSQL disaster recovery and a production backup drill remain deployment responsibilities.
+## Non-functional coverage
 
-Approved prices, durations, models, capacities, variant/color options, provider credentials, deployment URL and a production database are operational configuration rather than values this update can safely invent. See README.md and OPERATOR_GUIDE.md.
+HTTP-only and SameSite session cookies; security headers; origin write protection; private file denial; JSON input type/size limits; separate-customer authorization; atomic booking contention; transaction/savepoint rollback; immutable audit data; backup reopen; SQLite foreign keys and schema upgrades; production HTTPS configuration; PostgreSQL row-level security; protected public build. The dependency audit is a package advisory snapshot, not a security certification or penetration test.
+
+## Practical limits
+
+No desktop/mobile screenshots or browser layout pass is claimed because Chromium could not start. DOM tests verify behavior, not pixel layout or assistive-device compatibility. Real Windows execution, real email delivery, real transfers, remote PostgreSQL networking/TLS, long-running soak testing and production capacity were not tested here. Confirm the supplied payment details, configure delivery credentials and approve real equipment/rates before live use. Demo rates and delivery zones are synthetic; they are not verified market prices.
+
+Historical guest data remains staff-accessible. Live customer bookings require the signed-in owner; records are never assigned merely because a name/phone matches. The existing admin files are unchanged; new customer-only controls are enforced through shared backend rules and the existing quotation/payment endpoints.
+
+The former guest-code, capacity-pricing and OCR tests are retained as reference text under `tests/superseded/`; they describe obsolete contracts and are not counted as current passing tests. Current logs are `TEST_LOCAL.log` and `TEST_POSTGRES.log`.
+
+## Layout refinement regression checks
+
+The updated DOM tests verify that pricing belongs to the final Review step, no wizard sidebar exists, the removed caption is absent, selected extras survive Review navigation, profile cancellation follows the status for both pending and paid active bookings, inactive bookings omit cancellation, and the reason dialog validates and posts the correct booking reference. Customer grid/fieldset CSS now explicitly permits shrinking and wrapping instead of intrinsic overflow. Visual desktop/mobile rendering remains unverified because of the previously documented Chromium startup restriction; no visual pass is claimed.
+
+## Final button/backend regression
+
+The final run adds real-page Manage Booking submissions at the normal anonymous-request limit, 30 quote previews before booking, repeated owner reads before rescheduling, the ₱2,499.99 payment scenario, nearby validation/server feedback and repeat-click protection. Customer forms, account recovery, moderation, notification bridge delivery, gallery/FAQ external-script behavior, calendar controls, review filters, mobile navigation and all local HTML targets were also checked. See BACKEND_REVIEW.md for the control matrix, fixed findings and remaining configuration/visual limits.

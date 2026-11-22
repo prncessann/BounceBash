@@ -218,9 +218,46 @@ db.transaction(() => {
     CREATE TABLE IF NOT EXISTS date_blocks(event_date TEXT PRIMARY KEY,reason TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
   `);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS payment_proofs (
+      id TEXT PRIMARY KEY,
+      payment_id INTEGER NOT NULL UNIQUE REFERENCES payments(id) ON DELETE CASCADE,
+      media_type TEXT NOT NULL CHECK(media_type IN ('image/png','image/jpeg','image/webp')),
+      image BLOB NOT NULL CHECK(length(image) BETWEEN 1 AND 5242880)
+    )
+  `);
   db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_active_booking_date ON bookings(event_date) WHERE status IN ('pending','confirmed','completed')");
   const insertZone=db.prepare('INSERT OR IGNORE INTO rental_zones(slug,name) VALUES (?,?)');
   for(const row of [['dry','Dry Zone'],['splash','Splash Zone'],['ball-pit','Ball Pit Zone']])insertZone.run(...row);
+})();
+// SQLite cannot drop a NOT NULL constraint in place. Rebuild only bookings while
+// keeping IDs, every existing column, indexes/triggers and referencing tables.
+const childColumn=db.pragma('table_info(bookings)').find(c=>c.name==='children_count');
+if(childColumn && childColumn.notnull){
+  const original=db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='bookings'").get().sql;
+  const schema=original.replace(/CREATE TABLE (?:"bookings"|bookings)/i,'CREATE TABLE bookings_nullable').replace(/children_count INTEGER NOT NULL/i,'children_count INTEGER');
+  if(schema===original || !schema.includes('bookings_nullable'))throw new Error('Booking migration could not recognize the existing schema.');
+  const extras=db.prepare("SELECT sql FROM sqlite_master WHERE tbl_name='bookings' AND type IN ('index','trigger') AND sql IS NOT NULL").all();
+  db.pragma('foreign_keys = OFF');
+  try{db.transaction(()=>{
+    db.exec(schema);const columns=db.pragma('table_info(bookings)').map(c=>'"'+c.name+'"').join(',');
+    db.exec(`INSERT INTO bookings_nullable(${columns}) SELECT ${columns} FROM bookings`);
+    db.exec('DROP TABLE bookings');db.exec('ALTER TABLE bookings_nullable RENAME TO bookings');
+    for(const row of extras)db.exec(row.sql);
+    if(db.pragma('foreign_key_check').length)throw new Error('Migration found an existing foreign-key conflict. Restore backup and review data.');
+  }).immediate();}finally{db.pragma('foreign_keys = ON');}
+}
+db.transaction(()=>{
+ addColumn('bookings','city_id','TEXT');
+ addColumn('bookings','extra_hours','INTEGER NOT NULL DEFAULT 0');
+ addColumn('bookings','delivery_fee_cents','INTEGER');
+ addColumn('bookings','subtotal_cents','INTEGER');
+ addColumn('bookings','pricing_state',"TEXT NOT NULL DEFAULT 'legacy'");
+ addColumn('bookings','flow_version','INTEGER NOT NULL DEFAULT 1');
+ addColumn('rental_models','booking_package_id','INTEGER REFERENCES packages(id)');
+ addColumn('rental_models','includes_balls','INTEGER NOT NULL DEFAULT 0');
+ addColumn('rental_models','is_demo','INTEGER NOT NULL DEFAULT 0');
+ db.prepare('INSERT OR IGNORE INTO schema_migrations(version) VALUES(4)').run();
 })();
 function audit(actor, action, entity, id, detail = {}) {
   db.prepare('INSERT INTO audit_events(actor, action, entity, entity_id, detail) VALUES (?,?,?,?,?)')

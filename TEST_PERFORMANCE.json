@@ -1,9 +1,7 @@
 {
-  "requests": 100,
-  "concurrency": 10,
-  "errors": 0,
-  "median_ms": 6.34,
-  "p95_ms": 8.19,
-  "max_ms": 12.08,
-  "scope": "local catalog reads only; no production capacity claim"
+  "scope": "Local parallel catalog smoke check, not production capacity",
+  "concurrency": 30,
+  "sqlite_elapsed_ms": 48,
+  "pglite_elapsed_ms": 316,
+  "errors": 0
 }

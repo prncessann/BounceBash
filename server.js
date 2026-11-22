@@ -14,10 +14,20 @@ async function start() {
     audit
   } = require('./backend/database');
   await db.ready;
+  const content = require("./backend/site-content");
+  await content.migrateContent(db);
+  if(config.demoCatalog)await require('./backend/demo-booking-catalog').seedDemo(db);
+  const rules=require('./backend/booking-rules');
   const {
     enqueue,
     deliver
   } = require('./backend/notifications');
+  const staffNotices=require('./backend/staff-notices');
+  const noticeQueue=staffNotices.createNoticeQueue({db,enqueue,publicUrl:config.publicUrl,today});
+  async function deliverScheduledNotices(){
+    await noticeQueue.schedule();
+    await deliver();
+  }
   const app = express();
   app.disable('x-powered-by');
   if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
@@ -166,8 +176,9 @@ async function start() {
       req.actor = 'operator';
       return next();
     }
-    if (await staffFor(req)) {
-      req.actor = 'staff';
+    const staff = await staffFor(req);
+    if (staff) {
+      req.actor = 'staff:' + staff.id;
       return next();
     }
     if (!config.operatorKey) return next(Object.assign(new Error('Operator access is disabled until OPERATOR_API_KEY is configured.'), { status: 503 }));
@@ -192,9 +203,11 @@ async function start() {
       message: kind === 'reset' ? 'Reset your password within 30 minutes.' : 'Verify your email within 24 hours.'
     });
   }
-  function rate(label,max,ms){
+  function rate(label,max,ms,accountScoped=false){
     return asyncRoute(async(req,res,next)=>{
-      const identity=hash(`${label}:${req.ip || req.socket.remoteAddress || 'unknown'}`);const t=Date.now();
+      const account=accountScoped ? (req.user||await userFor(req)):null;
+      const scope=account?`customer:${account.id}`:(req.ip||req.socket.remoteAddress||'unknown');
+      const identity=hash(`${label}:${scope}`);const t=Date.now();
       const row=await db.prepare('INSERT INTO rate_limits(bucket,count,expires_at) VALUES (?,?,?) ON CONFLICT(bucket) DO UPDATE SET count=CASE WHEN rate_limits.expires_at<=? THEN 1 ELSE rate_limits.count+1 END, expires_at=CASE WHEN rate_limits.expires_at<=? THEN ? ELSE rate_limits.expires_at END RETURNING count,expires_at').get(identity,1,t+ms,t,t,t+ms);
       if(row.count>max){res.set('Retry-After',String(Math.max(1,Math.ceil((Number(row.expires_at)-t)/1000))));return res.status(429).json({error:'Too many requests. Please try again later.'});}
       next();
@@ -202,8 +215,12 @@ async function start() {
   }
   const authRate = rate('authentication', config.authLimit, 15 * 60000);
   const publicRate = rate('public-submissions', config.publicLimit, 15 * 60000);
+  const quoteRate=rate('quote-preview-v2',config.quoteLimit,60000);
+  const bookingReadRate=rate('booking-read-v2',config.readLimit,60000,true);
+  const bookingActionRate=rate('booking-action-v2',config.bookingActionLimit,15*60000,true);
   await db.prepare("CREATE TABLE IF NOT EXISTS staff_users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)").run();
   await db.prepare("CREATE TABLE IF NOT EXISTS staff_sessions (id TEXT PRIMARY KEY, staff_id TEXT NOT NULL, token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL)").run();
+  const proofTypes = { 'image/png':'png','image/jpeg':'jpeg','image/webp':'webp' };
   app.use((req, res, next) => {
     res.set({
       'X-Content-Type-Options': 'nosniff',
@@ -236,6 +253,15 @@ async function start() {
     strict: false
   }));
   app.use(cookieParser());
+  app.get('/api/cron/notifications', asyncRoute(async (req, res) => {
+    const bearer = req.get('Authorization') || '';
+    if (!config.cronSecret || !crypto.timingSafeEqual(Buffer.from(hash(bearer)), Buffer.from(hash(`Bearer ${config.cronSecret}`)))) {
+      return res.status(401).json({error:'Scheduler authentication required.'});
+    }
+    if (!config.webhookUrl) fail(503, 'Notification delivery is unavailable.');
+    await deliverScheduledNotices();
+    res.json({success:true});
+  }));
   app.use('/api', asyncRoute(async (req, res, next) => {
     if (req.body !== undefined && (req.body === null || Array.isArray(req.body) || typeof req.body !== 'object')) return res.status(400).json({
       error: 'Request body must be a JSON object.'
@@ -251,15 +277,21 @@ async function start() {
       time: now()
     });
   }));
+  async function publicAddOns(){
+    const pricing=await content.setting(db,'pricing');
+    const rows=await db.prepare("SELECT id,name,description,unit_price_cents,max_quantity FROM add_ons WHERE is_active=1 AND name IN ('Ball colors','Balloon arch','Backdrop & signage') ORDER BY id").all();
+    return rows.map(a=>({...a,unit_price_cents:pricing.extras[a.name]}));
+  }
   app.get('/api/catalog', asyncRoute(async (req, res) => res.json({
     packages: await db.prepare('SELECT id,name,description,base_price,base_price_cents,rental_hours,inclusions FROM packages WHERE is_active=1 ORDER BY id').all(),
-    addOns: await db.prepare('SELECT id,name,description,unit_price_cents,max_quantity FROM add_ons WHERE is_active=1 ORDER BY id').all(),
+    addOns: await publicAddOns(),
     zones: await db.prepare('SELECT * FROM rental_zones ORDER BY id').all(),
     models: await db.prepare('SELECT * FROM rental_models WHERE is_active=1 ORDER BY id').all(),
-    variants: await db.prepare('SELECT * FROM model_variants WHERE is_active=1 ORDER BY id').all(),
+    variants: (await db.prepare('SELECT * FROM model_variants WHERE is_active=1 ORDER BY id').all()).map(v=>({...v,name:rules.publicLabel(v.name)})),
     packageModels: await db.prepare('SELECT * FROM package_models').all(),
     options: await db.prepare('SELECT * FROM add_on_options WHERE is_active=1 ORDER BY id').all(),
-    pricing: 'Only configured prices are quoted; missing values require the team to provide a quote.'
+    cities: (await content.setting(db,'pricing')).cities,colors:rules.colors,backdropEvents:rules.events,extra_hour_cents:(await content.setting(db,'pricing')).extraHourCents,hold_seconds:10800,
+    pricing:'Server-calculated final total when notes are empty; notes require a final admin quotation.'
   })));
   app.get('/api/availability', asyncRoute(async (req, res) => {
     const day = date(req.query.date);
@@ -277,6 +309,7 @@ async function start() {
     const start = `${year}-${String(month).padStart(2, '0')}-01`;
     const end = new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 10);
     const rows = await db.prepare(`SELECT event_date AS date, CASE WHEN SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END)>0 THEN 'confirmed' ELSE MIN(status) END AS status FROM bookings WHERE event_date>=? AND event_date<? AND ${activeSQL} GROUP BY event_date ORDER BY event_date`).all(start, end);
+    for(const row of rows)row.status='unavailable';
     const blocks = await db.prepare('SELECT event_date AS date FROM date_blocks WHERE event_date>=? AND event_date<?').all(start, end);
     for (const block of blocks) if (!rows.some(r => r.date === block.date)) rows.push({
       date: block.date,
@@ -459,20 +492,16 @@ async function start() {
     return booking;
   }
   async function authorizedBooking(req) {
-    const booking = await getBooking(req.params.reference);
-    const user = await userFor(req);
-    const raw = req.get('X-Booking-Token');
-    if (user && booking.customer_id === user.id) return booking;
-    if (typeof raw === 'string' && raw.length === 64 && booking.access_token_hash && crypto.timingSafeEqual(Buffer.from(hash(raw)), Buffer.from(booking.access_token_hash))) return booking;
-    // Do not distinguish another customer's reference from an unknown reference.
-    fail(404, 'Booking not found or access credentials are invalid.');
+    const user=await userFor(req);if(!user)fail(401,'Sign in to access your booking.');
+    const booking=await getBooking(req.params.reference);
+    if(booking.customer_id!==user.id)fail(404,'Booking not found.');return booking;
   }
   async function assertBookingState(b){
     const current=await db.prepare('SELECT * FROM bookings WHERE id=?').get(b.id);
-    if(!current || ['status','event_date','event_time','total_cents','deposit_cents','expires_at'].some(key=>current[key]!==b[key]))fail(409,'This booking changed in another request. Refresh and retry.');
+    if(!current || ['status','event_date','event_time','total_cents','deposit_cents','expires_at','pricing_state'].some(key=>current[key]!==b[key]))fail(409,'This booking changed in another request. Refresh and retry.');
   }
   async function paymentsFor(id) {
-    return await db.prepare('SELECT id,amount_cents,reference,method,status,review_note,created_at FROM payments WHERE booking_id=? ORDER BY id DESC').all(id);
+    return await db.prepare('SELECT p.id,p.amount_cents,p.reference,p.method,p.status,p.review_note,p.created_at,pr.id AS proof_id FROM payments p LEFT JOIN payment_proofs pr ON pr.payment_id=p.id WHERE p.booking_id=? ORDER BY p.id DESC').all(id);
   }
   async function bookingView(b) {
     const payments = await paymentsFor(b.id);
@@ -488,6 +517,10 @@ async function start() {
       venue: b.venue,
       package_name: b.package_name,
       children_count: b.children_count,
+      city_id:b.city_id,extra_hours:b.extra_hours,delivery_fee_cents:b.delivery_fee_cents,subtotal_cents:b.subtotal_cents,
+      pricing_state:b.pricing_state==='legacy' ? (b.total_cents===null?'pending_quote':'final'):b.pricing_state,
+      flow_version:b.flow_version,server_time:now(),
+      payment_requires_attention:['expired','cancelled'].includes(b.status)&&payments.some(p=>['pending','verified'].includes(p.status)),
       selected_style: b.selected_style,
       add_ons: JSON.parse(b.add_ons || '[]'),
       notes: b.notes,
@@ -517,51 +550,45 @@ async function start() {
   app.get('/api/bookings/mine', asyncRoute(auth), asyncRoute(async (req, res) => res.json({
     bookings: await Promise.all((await db.prepare('SELECT * FROM bookings WHERE customer_id=? ORDER BY id DESC LIMIT 200').all(req.user.id)).map(bookingView))
   })));
-  async function createBooking(body, user) {
+  async function createBooking(body, user, staffActor) {
+    if(!user&&!staffActor)fail(401,'Sign in before submitting a booking.');
     const name = text(body.name, 'Customer name', 2, 120);
     const contact = phone(body.contact);
     const day = date(body.eventDate || body.event_date, true);
     const time = eventTime(body.eventTime || body.event_time);
     eventDateTime(day, time);
     const venue = text(body.venue, 'Venue', 2, 1000);
-    const packageName = text(body.packageName || body.package_name || body.package, 'Package', 1, 120);
-    const children = integer(body.children ?? body.childrenCount, 'Number of children', 1, 1000);
+    let packageName;
+    const children = null;
     const style = optional(body.selectedStyle ?? body.selected_style, 'Style', 120);
     const styles = ['Classic White Castle', 'Boho Pastel Playground', 'Rainbow Racer Slide', 'Carnival Pop Castle'];
     if (style && !styles.includes(style)) fail(400, 'Selected style is not valid.');
     const notes = optional(body.notes, 'Notes', 3000);
     if (!boolean(body.reservationFeeAccepted, 'Reservation acknowledgement')) fail(400, 'Confirm the 50% reservation fee requirement.');
     if (body.addOns !== undefined && (!Array.isArray(body.addOns) || body.addOns.length > 20)) fail(400, 'Add-ons must be an array of at most 20 names.');
-    const addOns = [...new Set((body.addOns || []).map(v => text(v, 'Add-on', 1, 120)))];
-    if (!(await db.prepare('SELECT id FROM packages WHERE name=? AND is_active=1').get(packageName))) fail(400, 'Selected package is not active or valid.');
-    for (const addon of addOns) if (!(await db.prepare('SELECT id FROM add_ons WHERE name=? AND is_active=1').get(addon))) fail(400, 'Selected add-on is not active or valid.');
     const mail = body.email ? email(body.email) : user ? user.email : '';
-    const selection = await catalogSelection(body, false);
-    let quote = null;
-    try {
-      quote = await calculateQuote(body);
-    } catch (e) {
-      if (e.status !== 409) throw e;
-    }
-    const raw = token();
     const reference = `BB-${today().replace(/-/g, '')}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
     const expires = new Date(Date.now() + config.pendingHours * 3600000).toISOString();
     const id = await db.transaction(async () => {
+      const selection = await catalogSelection(body);
+      packageName=selection.pkg.name;
+      const quote=quoteForSelection(selection);
+      if(body.reviewToken!==undefined && body.reviewToken!==hash(JSON.stringify(quote)))fail(409,'Pricing changed. Review the updated quote before submitting.');
       if (!(await available(day))) fail(409, 'This event date is already reserved. Please pick another date.');
+      const selectedAddOns = selection.items.map(item => item.name);
       const result = await db.prepare(`INSERT INTO bookings(customer_id,reference_code,name,contact_number,event_date,event_time,venue,package_name,children_count,selected_style,add_ons,notes,reservation_fee_accepted,status,email,access_token_hash,expires_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,'pending',?,?,?)`).run(user ? user.id : null, reference, name, contact, day, time, venue, packageName, children, style || null, JSON.stringify(addOns), notes, mail, hash(raw), expires);
-      for (const addon of addOns) await db.prepare('INSERT INTO booking_add_ons(booking_id,add_on_id) VALUES (?,?)').run(result.lastInsertRowid, (await db.prepare('SELECT id FROM add_ons WHERE name=?').get(addon)).id);
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,'pending',?,?,?)`).run(user ? user.id : null, reference, name, contact, day, time, venue, packageName, children, style || null, JSON.stringify(selectedAddOns), notes, mail, null, expires);
+      for (const item of selection.items) await db.prepare('INSERT INTO booking_add_ons(booking_id,add_on_id) VALUES (?,?)').run(result.lastInsertRowid, item.id);
       await db.prepare('UPDATE bookings SET model_id=?,variant_id=?,selection_json=?,quote_json=?,total_cents=?,deposit_cents=? WHERE id=?').run(selection.modelId, selection.variantId, JSON.stringify(selection.items), quote ? JSON.stringify(quote) : null, quote ? quote.total_cents : null, quote ? quote.deposit_cents : null, result.lastInsertRowid);
-      await audit(user ? `customer:${user.id}` : 'guest', 'booking.created', 'booking', result.lastInsertRowid, {
+      await db.prepare('UPDATE bookings SET city_id=?,extra_hours=?,delivery_fee_cents=?,subtotal_cents=?,pricing_state=?,flow_version=2 WHERE id=?').run(selection.city.id,selection.extraHours,selection.city.delivery_cents,quote.subtotal_cents,quote.pricing_state,result.lastInsertRowid);
+      await audit(staffActor || (user ? `customer:${user.id}` : 'guest'), 'booking.created', 'booking', result.lastInsertRowid, {
         reference,
         date: day
       });
+      await noticeQueue.notify('newBooking','/Bouncebash_Admin/bookings.html?reference='+encodeURIComponent(reference),'A new booking is ready for review.');
       if (mail) {
         const manage = new URL('/Bouncebash_CS/manage-booking.html', config.publicUrl);
-        manage.hash = new URLSearchParams({
-          reference,
-          token: raw
-        }).toString();
+        manage.searchParams.set('reference',reference);
         await enqueue(mail, 'booking.created', {
           reference,
           url: manage.href,
@@ -573,20 +600,20 @@ async function start() {
     }).immediate();
     return {
       success: true,
-      message: 'Booking request submitted. Keep your private tracking code; this is a pending hold, not a confirmed paid reservation.',
+      message: 'Booking submitted and added to your profile. Your date is unavailable to others during the three-hour hold.',
       booking: {
         id,
         reference,
-        accessToken: raw,
-        expires_at: expires
+        expires_at: expires,
+        status: 'pending',server_time:now()
       }
     };
   }
-  app.post('/api/bookings', publicRate, asyncRoute(async (req, res) => res.status(201).json(await createBooking(req.body, await userFor(req)))));
-  app.get('/api/bookings/:reference', publicRate, asyncRoute(async (req, res) => res.json({
+  app.post('/api/bookings', asyncRoute(auth), bookingActionRate, asyncRoute(async (req, res) => res.status(201).json(await createBooking(req.body,req.user))));
+  app.get('/api/bookings/:reference', bookingReadRate, asyncRoute(async (req, res) => res.json({
     booking: await bookingView(await authorizedBooking(req))
   })));
-  app.post('/api/bookings/:reference/cancel', publicRate, asyncRoute(async (req, res) => {
+  app.post('/api/bookings/:reference/cancel', asyncRoute(auth), bookingActionRate, asyncRoute(async (req, res) => {
     const b = await authorizedBooking(req);
     const reason = text(req.body.reason || 'Cancelled by customer', 'Reason', 2, 1000);
     if (!['pending', 'confirmed'].includes(b.status)) fail(409, 'Only pending or confirmed bookings can be cancelled.');
@@ -605,8 +632,8 @@ async function start() {
       booking: await bookingView(await getBooking(b.reference_code))
     });
   }));
-  app.post('/api/bookings/:reference/reschedule', publicRate, asyncRoute(async (req, res) => {
-    const b = await authorizedBooking(req);
+  const rescheduleBooking = asyncRoute(async (req, res) => {
+    const b = req.actor ? await getBooking(req.params.reference) : await authorizedBooking(req);
     if (!['pending', 'confirmed'].includes(b.status)) fail(409, 'Only active bookings can be rescheduled.');
     requireFutureBooking(b);
     const day = date(req.body.eventDate, true);
@@ -617,7 +644,7 @@ async function start() {
       await assertBookingState(b);
       if (!(await available(day, b.id))) fail(409, 'The requested date is already reserved.');
       await db.prepare("UPDATE bookings SET event_date=?,event_time=?,status='pending',expires_at=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(day, time, new Date(Date.now() + config.pendingHours * 3600000).toISOString(), b.id);
-      await audit(b.customer_id ? `customer:${b.customer_id}` : 'guest', 'booking.rescheduled', 'booking', b.id, {
+      await audit(req.actor || (b.customer_id ? `customer:${b.customer_id}` : 'guest'), 'booking.rescheduled', 'booking', b.id, {
         from: b.event_date,
         to: day
       });
@@ -628,39 +655,66 @@ async function start() {
       message: 'Reschedule requested. The team must confirm the new schedule.',
       booking: await bookingView(await getBooking(b.reference_code))
     });
-  }));
-  app.post('/api/bookings/:reference/payments', publicRate, asyncRoute(async (req, res) => {
-    const b = await authorizedBooking(req);
+  });
+  app.post('/api/bookings/:reference/reschedule',asyncRoute(auth),bookingActionRate,rescheduleBooking);
+  const recordPaymentReference = asyncRoute(async (req, res) => {
+    const b = req.actor ? await getBooking(req.params.reference) : await authorizedBooking(req);
     if (!['pending', 'confirmed'].includes(b.status)) fail(409, 'Payments cannot be submitted for an inactive booking.');
-    requireFutureBooking(b);
+    if (!req.actor) requireFutureBooking(b);
     if (b.total_cents === null) fail(409, 'Wait for the team to provide a quote before submitting a payment reference.');
-    const cents = money(req.body.amount);
-    const reference = text(req.body.reference, 'Transaction reference', 4, 120);
+    if(b.pricing_state==='pending_quote')fail(409,'Wait for the final admin quotation before paying.');
+    const fields=req.body;
+    const cents = money(fields.amount);
+    const reference = text(fields.reference, 'Transaction reference', 4, 120);
     if (!/^[A-Za-z0-9][A-Za-z0-9 _./-]*$/.test(reference)) fail(400, 'Transaction reference contains invalid characters.');
-    const method = text(req.body.method, 'Payment method', 2, 40);
+    const method = text(fields.method, 'Payment method', 2, 40);
     if (!['GCash', 'Bank transfer', 'Cash'].includes(method)) fail(400, 'Select GCash, Bank transfer, or Cash.');
     const id = await db.transaction(async () => {
       await assertBookingState(b);
       const outstanding = (await db.prepare("SELECT COALESCE(SUM(amount_cents),0) AS total FROM payments WHERE booking_id=? AND status IN ('pending','verified')").get(b.id)).total;
       if (outstanding + cents > b.total_cents) fail(409, 'This amount exceeds the remaining unreported balance, including pending payments.');
       const row = await db.prepare('INSERT INTO payments(booking_id,amount_cents,reference,method) VALUES (?,?,?,?)').run(b.id, cents, reference, method);
-      await audit(b.customer_id ? `customer:${b.customer_id}` : 'guest', 'payment.submitted', 'payment', row.lastInsertRowid, {
+
+      await audit(req.actor || `customer:${b.customer_id}`, 'payment.submitted', 'payment', row.lastInsertRowid, {
         booking_id: b.id,
         amount_cents: cents
       });
       await notifyBooking(b, 'payment.submitted', 'Payment reference received and awaiting manual verification. Funds have not been verified by this website.');
+      await noticeQueue.notify('paymentReceived','/Bouncebash_Admin/bookings.html?reference='+encodeURIComponent(b.reference_code),'A payment reference is awaiting verification.');
       return row.lastInsertRowid;
     }).immediate();
     res.status(201).json({
       success: true,
       paymentId: id,
-      message: 'Payment reference recorded for manual verification. This website has not charged you or verified the transfer.'
+      message: 'Payment reference submitted. Your payment is awaiting verification.'
     });
+  });
+  app.post('/api/bookings/:reference/payments', asyncRoute(auth), bookingActionRate, recordPaymentReference);
+  function sendProof(res, proof) {
+    if (!proof) fail(404, 'Payment proof not found.');
+    const extension = proofTypes[proof.media_type];
+    res.set('Content-Disposition', 'attachment; filename="payment-proof.' + extension + '"');
+    res.type(proof.media_type);
+    const bytes = Buffer.from(proof.image);
+    if (bytes.length <= 4 * 1024 * 1024) return res.send(bytes);
+    // Stream large downloads through the Vercel response size limit.
+    const { Readable } = require('node:stream');
+    function* chunks() {
+      for (let offset = 0; offset < bytes.length; offset += 256 * 1024) {
+        yield bytes.subarray(offset, offset + 256 * 1024);
+      }
+    }
+    Readable.from(chunks()).pipe(res);
+  }
+  app.get('/api/bookings/:reference/payment-proofs/:proofId', asyncRoute(async (req, res) => {
+    const b = await authorizedBooking(req);
+    sendProof(res, await db.prepare('SELECT pr.media_type,pr.image FROM payment_proofs pr JOIN payments p ON p.id=pr.payment_id WHERE pr.id=? AND p.booking_id=?').get(req.params.proofId, b.id));
   }));
   app.get('/api/reviews', asyncRoute(async (req, res) => {
     const limit = integer(req.query.limit ?? 6, 'Limit', 1, 50);
     const offset = integer(req.query.offset ?? 0, 'Offset', 0, 1000000);
-    const filter = ["can_feature=1", "moderation_status='approved'"];
+    const filter = ["can_feature=1", "moderation_status='approved'", "COALESCE(e.archived,0)=0"];
+    if (req.query.featured === 'true') filter.push('COALESCE(e.featured,1)=1');
     const params = [];
     if (req.query.rating !== undefined) {
       filter.push('rating=?');
@@ -671,8 +725,9 @@ async function start() {
       params.push(text(req.query.eventType, 'Event type', 1, 100));
     }
     const where = filter.join(' AND ');
-    const reviews = await db.prepare(`SELECT id,name,event_type,package_name,rating,message,created_at FROM reviews WHERE ${where} ORDER BY id DESC LIMIT ? OFFSET ?`).all(...params, limit, offset);
-    const total = (await db.prepare(`SELECT COUNT(*) AS n FROM reviews WHERE ${where}`).get(...params)).n;
+    const source = "reviews LEFT JOIN review_editorial e ON e.review_id=reviews.id";
+    const reviews = await db.prepare(`SELECT id,name,event_type,package_name,rating,message,created_at,e.correction FROM ${source} WHERE ${where} ORDER BY id DESC LIMIT ? OFFSET ?`).all(...params, limit, offset);
+    const total = (await db.prepare(`SELECT COUNT(*) AS n FROM ${source} WHERE ${where}`).get(...params)).n;
     const dist = {
       1: 0,
       2: 0,
@@ -682,7 +737,7 @@ async function start() {
     };
     let count = 0;
     let sum = 0;
-    for (const row of await db.prepare("SELECT rating,COUNT(*) AS n FROM reviews WHERE can_feature=1 AND moderation_status='approved' GROUP BY rating").all()) {
+    for (const row of await db.prepare("SELECT rating,COUNT(*) AS n FROM reviews LEFT JOIN review_editorial e ON e.review_id=reviews.id WHERE can_feature=1 AND moderation_status='approved' AND COALESCE(e.archived,0)=0 GROUP BY rating").all()) {
       dist[row.rating] = row.n;
       count += row.n;
       sum += row.rating * row.n;
@@ -707,7 +762,11 @@ async function start() {
     const pkg = optional(req.body.packageName ?? req.body.package_name, 'Package', 120);
     const consent = boolean(req.body.canFeature, 'Public display consent');
     if (pkg && !(await db.prepare('SELECT id FROM packages WHERE name=?').get(pkg))) fail(400, 'Select a valid package.');
-    const row = await db.prepare("INSERT INTO reviews(name,event_type,package_name,rating,message,can_feature,moderation_status) VALUES (?,?,?,?,?,?,'pending')").run(name, event, pkg, rating, message, consent ? 1 : 0);
+    const row = await db.transaction(async()=>{
+      const created=await db.prepare("INSERT INTO reviews(name,event_type,package_name,rating,message,can_feature,moderation_status) VALUES (?,?,?,?,?,?,'pending')").run(name,event,pkg,rating,message,Number(consent));
+      await noticeQueue.notify('newReview','/Bouncebash_Admin/blog.html','Customer feedback is awaiting moderation.');
+      return created;
+    })();
     res.status(201).json({
       success: true,
       reviewId: row.lastInsertRowid,
@@ -742,9 +801,14 @@ async function start() {
   }));
   // Protected operational APIs. These do not modify or inject code into the original admin panel.
   app.use('/api/operator', asyncRoute(operator), rate('operator', 180, 60000));
+  content.registerContent({app,db,audit,asyncRoute,fail,text,optional,integer});
+  staffNotices.registerStaffNotices({app,db,audit,asyncRoute,fail});
+  require('./backend/operator-overview').registerOverview({app,db,asyncRoute,date,today,fail});
+  app.post('/api/operator/bookings/:reference/reschedule',rescheduleBooking);
+  app.post('/api/operator/bookings/:reference/payments',recordPaymentReference);
   app.post('/api/operator/maintenance', asyncRoute(async (req, res) => {
     await maintenance();
-    await deliver();
+    await deliverScheduledNotices();
     res.json({
       success: true
     });
@@ -755,13 +819,14 @@ async function start() {
     zones: await db.prepare('SELECT * FROM rental_zones ORDER BY id').all(),
     models: await db.prepare('SELECT * FROM rental_models ORDER BY id').all(),
     variants: await db.prepare('SELECT * FROM model_variants ORDER BY id').all(),
+    packageModels: await db.prepare('SELECT * FROM package_models ORDER BY package_id,model_id').all(),
     options: await db.prepare('SELECT * FROM add_on_options ORDER BY id').all()
   })));
   app.post('/api/operator/catalog/packages', asyncRoute(async (req, res) => {
     const name = text(req.body.name, 'Package name', 2, 120);
     const description = optional(req.body.description, 'Description', 1000);
     const r = await db.prepare('INSERT INTO packages(name,description) VALUES (?,?)').run(name, description);
-    await audit('operator', 'package.created', 'package', r.lastInsertRowid);
+    await audit(req.actor, 'package.created', 'package', r.lastInsertRowid);
     res.status(201).json({
       success: true,
       id: r.lastInsertRowid
@@ -771,7 +836,7 @@ async function start() {
     const name = text(req.body.name, 'Add-on name', 2, 120);
     const description = optional(req.body.description, 'Description', 1000);
     const r = await db.prepare('INSERT INTO add_ons(name,description) VALUES (?,?)').run(name, description);
-    await audit('operator', 'addon.created', 'add_on', r.lastInsertRowid);
+    await audit(req.actor, 'addon.created', 'add_on', r.lastInsertRowid);
     res.status(201).json({
       success: true,
       id: r.lastInsertRowid
@@ -795,12 +860,26 @@ async function start() {
       filters.push('event_date<=?');
       params.push(date(req.query.to));
     }
+    if(req.query.search){
+      const term='%'+text(req.query.search,'Search',1,120).toLowerCase()+'%';
+      filters.push('(LOWER(reference_code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(contact_number) LIKE ?)');
+      params.push(term,term,term);
+    }
+    if(req.query.payment){
+      const verified="COALESCE((SELECT SUM(amount_cents) FROM payments WHERE booking_id=bookings.id AND status='verified'),0)";
+      const paymentFilters={unpaid:verified+'=0',balance:'total_cents>'+verified,paid:'total_cents<='+verified,
+        pending:"EXISTS (SELECT 1 FROM payments WHERE booking_id=bookings.id AND status='pending')"};
+      if(!Object.hasOwn(paymentFilters,req.query.payment))fail(400,'Invalid payment filter.');
+      filters.push(paymentFilters[req.query.payment]);
+    }
+    const order=req.query.sort==='soonest'?'event_date,event_time,id':req.query.sort==='latest'?'event_date DESC,event_time DESC,id DESC':'id DESC';
     const where = filters.length ? ' WHERE ' + filters.join(' AND ') : '';
     res.json({
-      bookings: await Promise.all((await db.prepare('SELECT * FROM bookings' + where + ' ORDER BY id DESC LIMIT ? OFFSET ?').all(...params, limit, offset)).map(bookingView)),
+      bookings: await Promise.all((await db.prepare('SELECT * FROM bookings' + where + ' ORDER BY ' + order + ' LIMIT ? OFFSET ?').all(...params, limit, offset)).map(bookingView)),
       total: (await db.prepare('SELECT COUNT(*) AS n FROM bookings' + where).get(...params)).n
     });
   }));
+  app.post('/api/operator/bookings', asyncRoute(async (req,res) => res.status(201).json(await createBooking(req.body,null,req.actor))));
   app.get('/api/operator/bookings/:reference', asyncRoute(async (req, res) => res.json({
     booking: await bookingView(await getBooking(req.params.reference))
   })));
@@ -814,14 +893,16 @@ async function start() {
       await assertBookingState(b);
       const committed = (await db.prepare("SELECT COALESCE(SUM(amount_cents),0) AS n FROM payments WHERE booking_id=? AND status IN ('pending','verified')").get(b.id)).n;
       if (total < committed) fail(409, 'Quote cannot be lower than pending and verified payments.');
-      await db.prepare('UPDATE bookings SET total_cents=?,deposit_cents=?,quote_json=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').run(total, deposit, JSON.stringify({
+      await db.prepare("UPDATE bookings SET total_cents=?,deposit_cents=?,quote_json=?,pricing_state='final',updated_at=CURRENT_TIMESTAMP WHERE id=?").run(total, deposit, JSON.stringify({
+        ...JSON.parse(b.quote_json||'{}'),
+        pricing_state:'final',original_subtotal_cents:b.subtotal_cents,
         currency: 'PHP',
         total_cents: total,
         deposit_cents: deposit,
         source: 'operator',
         note: quoteNote
       }), b.id);
-      await audit('operator', 'booking.quoted', 'booking', b.id, {
+      await audit(req.actor, 'booking.quoted', 'booking', b.id, {
         total_cents: total,
         deposit_cents: deposit,
         note: quoteNote
@@ -859,7 +940,7 @@ async function start() {
         if (paid < b.total_cents) fail(409, 'Verify the full payment before completing the booking.');
       }
       await db.prepare('UPDATE bookings SET status=?,expires_at=NULL,cancellation_reason=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').run(target, reason, b.id);
-      await audit('operator', `booking.${target}`, 'booking', b.id, {
+      await audit(req.actor, `booking.${target}`, 'booking', b.id, {
         reason
       });
       await notifyBooking(b, `booking.${target}`, `Booking ${target}.${reason ? ` Reason: ${reason}` : ''}`);
@@ -868,6 +949,10 @@ async function start() {
       success: true,
       booking: await bookingView(await getBooking(b.reference_code))
     });
+  }));
+  app.get('/api/operator/payments/:id/proof', asyncRoute(async (req, res) => {
+    const id = integer(req.params.id, 'Payment ID', 1, Number.MAX_SAFE_INTEGER);
+    sendProof(res, await db.prepare('SELECT media_type,image FROM payment_proofs WHERE payment_id=?').get(id));
   }));
   app.put('/api/operator/payments/:id', asyncRoute(async (req, res) => {
     const id = integer(req.params.id, 'Payment ID', 1, Number.MAX_SAFE_INTEGER);
@@ -879,13 +964,13 @@ async function start() {
       if (!(p.status === 'pending' && ['verified', 'rejected'].includes(target) || p.status === 'verified' && target === 'refunded')) fail(409, 'Invalid payment status transition.');
       const b = await db.prepare('SELECT * FROM bookings WHERE id=?').get(p.booking_id);
       if (target === 'verified') {
-        if (!['pending', 'confirmed'].includes(b.status)) fail(409, 'Cannot verify a payment against an inactive booking. Contact the customer to resolve or reject it.');
+        if (!['pending','confirmed','expired','cancelled'].includes(b.status))fail(409,'Payment requires separate staff resolution.');
         const paid = (await db.prepare("SELECT COALESCE(SUM(amount_cents),0) AS n FROM payments WHERE booking_id=? AND status='verified'").get(b.id)).n;
         if (!b.total_cents || paid + p.amount_cents > b.total_cents) fail(409, 'Verified payments would exceed the quoted total.');
       }
       if (target === 'refunded' && !['cancelled', 'expired'].includes(b.status)) fail(409, 'Cancel the booking before recording a refund. Refund status records an external refund and does not send money.');
       await db.prepare('UPDATE payments SET status=?,review_note=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').run(target, note, id);
-      await audit('operator', `payment.${target}`, 'payment', id, {
+      await audit(req.actor, `payment.${target}`, 'payment', id, {
         booking_id: b.id,
         amount_cents: p.amount_cents,
         note
@@ -894,11 +979,11 @@ async function start() {
     }).immediate();
     res.json({
       success: true,
-      message: `Payment marked ${target}. This records an operator decision; no funds were moved by the website.`
+      message: `Payment marked ${target}. Booking availability is unchanged; expired/cancelled bookings remain inactive. No funds were moved by the website.`
     });
   }));
   app.get('/api/operator/reviews', asyncRoute(async (req, res) => res.json({
-    reviews: await db.prepare('SELECT * FROM reviews ORDER BY id DESC LIMIT 200').all()
+    reviews: await db.prepare('SELECT reviews.*,e.correction,e.featured,e.archived FROM reviews LEFT JOIN review_editorial e ON e.review_id=reviews.id ORDER BY id DESC LIMIT 200').all()
   })));
   app.put('/api/operator/reviews/:id', asyncRoute(async (req, res) => {
     const id = integer(req.params.id, 'Review ID', 1, Number.MAX_SAFE_INTEGER);
@@ -906,7 +991,7 @@ async function start() {
     if (!['approved', 'rejected', 'pending'].includes(status)) fail(400, 'Invalid moderation status.');
     await db.transaction(async () => {
       if (!(await db.prepare('UPDATE reviews SET moderation_status=? WHERE id=?').run(status, id)).changes) fail(404, 'Review not found.');
-      await audit('operator', 'review.moderated', 'review', id, {
+      await audit(req.actor, 'review.moderated', 'review', id, {
         status
       });
     })();
@@ -925,64 +1010,12 @@ async function start() {
     const description = optional(req.body.description, 'Description', 1000);
     await db.transaction(async () => {
       if (!(await db.prepare(`UPDATE ${table} SET is_active=?,description=? WHERE id=?`).run(active ? 1 : 0, description, id)).changes) fail(404, 'Catalog item not found.');
-      await audit('operator', 'catalog.updated', table, id, {
+      await audit(req.actor, 'catalog.updated', table, id, {
         active
       });
     })();
     res.json({
       success: true
-    });
-  }));
-  app.get('/api/operator/reports', asyncRoute(async (req, res) => {
-    const from = date(req.query.from || '2000-01-01');
-    const to = date(req.query.to || '2100-12-31');
-    if (from > to) fail(400, 'Report start date must not be after end date.');
-    const bookings = await db.prepare('SELECT * FROM bookings WHERE event_date>=? AND event_date<=? ORDER BY event_date').all(from, to);
-    const statuses = {};
-    const popularPackages = {};
-    const popularAddOns = {};
-    let outstanding = 0;
-    for (const b of bookings) {
-      statuses[b.status] = (statuses[b.status] || 0) + 1;
-      if (!['cancelled', 'expired'].includes(b.status)) {
-        const view = await bookingView(b);
-        if (view.balance_cents !== null) outstanding += view.balance_cents;
-        popularPackages[b.package_name] = (popularPackages[b.package_name] || 0) + 1;
-        const selected = JSON.parse(b.selection_json || '{}');
-        const items = Array.isArray(selected) ? selected : JSON.parse(b.add_ons || '[]').map(name => ({
-          name,
-          quantity: 1
-        }));
-        for (const item of items) popularAddOns[item.name] = (popularAddOns[item.name] || 0) + item.quantity;
-      }
-    }
-    const paymentRows = await db.prepare('SELECT status,COUNT(*) AS count,COALESCE(SUM(amount_cents),0) AS amount_cents FROM payments WHERE substr(created_at,1,10)>=? AND substr(created_at,1,10)<=? GROUP BY status').all(from, to);
-    const sumStatus = st => Number((paymentRows.find(p => p.status === st) || {}).amount_cents || 0);
-    res.json({
-      currency: 'PHP',
-      from,
-      to,
-      generated_at: now(),
-      date_basis: {
-        bookings: 'event_date',
-        payments: 'payment created_at date (UTC)',
-        outstanding: 'active bookings whose event date is in the range'
-      },
-      total_bookings: bookings.length,
-      bookings: statuses,
-      payments: paymentRows,
-      verified_collected_cents: sumStatus('verified'),
-      recorded_refunded_cents: sumStatus('refunded'),
-      outstanding_cents: outstanding,
-      popular_packages: Object.entries(popularPackages).map(([name, count]) => ({
-        name,
-        count
-      })).sort((a, b) => b.count - a.count),
-      popular_add_ons: Object.entries(popularAddOns).map(([name, quantity]) => ({
-        name,
-        quantity
-      })).sort((a, b) => b.quantity - a.quantity),
-      notes: 'Pending and rejected payments are excluded from collected revenue. Refunded rows are reported separately. This is an operational current-state report, not an audited accounting ledger.'
     });
   }));
   app.get('/api/operator/audit', asyncRoute(async (req, res) => {
@@ -1007,108 +1040,23 @@ async function start() {
     });
   }));
   // Customer catalog/quotes and operational contracts; no changes to the admin UI.
-  async function catalogSelection(body, requirePrices) {
-    const pkgName = text(body.packageName || body.package_name || body.package, 'Package', 1, 120);
-    const pkg = await db.prepare('SELECT * FROM packages WHERE name=? AND is_active=1').get(pkgName);
-    if (!pkg) fail(400, 'Selected package is not active or valid.');
-    const modelId = body.modelId === undefined || body.modelId === '' || body.modelId === null ? null : integer(body.modelId, 'Model ID', 1, 1000000);
-    const variantId = body.variantId === undefined || body.variantId === '' || body.variantId === null ? null : integer(body.variantId, 'Variant ID', 1, 1000000);
-    let model = null;
-    let variant = null;
-    if(!modelId && await db.prepare('SELECT 1 FROM package_models pm JOIN rental_models m ON m.id=pm.model_id WHERE pm.package_id=? AND m.is_active=1').get(pkg.id))fail(400,'Choose a configured rental model for this package.');
-    if (modelId) {
-      model = await db.prepare('SELECT * FROM rental_models WHERE id=? AND is_active=1').get(modelId);
-      if (!model) fail(400, 'Selected rental model is not active.');
-      if (!(await db.prepare('SELECT 1 FROM package_models WHERE package_id=? AND model_id=?').get(pkg.id, modelId))) fail(400, 'This model is not available with the selected package.');
-      const count = integer(body.children ?? body.childrenCount, 'Children', 1, 1000);
-      if (count > model.capacity) fail(400, 'The number of children exceeds this model capacity.');
-    }
-    if (variantId) {
-      variant = await db.prepare('SELECT * FROM model_variants WHERE id=? AND model_id=? AND is_active=1').get(variantId, modelId || 0);
-      if (!variant) fail(400, 'Selected color/style variant does not belong to this model.');
-    }
-    if (modelId && (await db.prepare('SELECT 1 FROM model_variants WHERE model_id=? AND is_active=1').get(modelId)) && !variantId) fail(400, 'Choose an available model variant.');
-    let raw;
-    if (body.addOnItems !== undefined) {
-      if (!Array.isArray(body.addOnItems) || body.addOnItems.length > 20) fail(400, 'Add-on selections must be an array of at most 20 items.');
-      raw = body.addOnItems;
-    } else {
-      if (body.addOns !== undefined && !Array.isArray(body.addOns)) fail(400, 'Add-ons must be an array.');
-      raw = (body.addOns || []).map(name => ({
-        name,
-        quantity: 1
-      }));
-    }
-    const used = new Set();
-    const items = await Promise.all(raw.map(async item => {
-      if (!item || Array.isArray(item) || typeof item !== 'object') fail(400, 'Invalid add-on item.');
-      const name = text(item.name, 'Add-on name', 1, 120);
-      if (used.has(name)) fail(400, 'Do not repeat an add-on; use its quantity field.');
-      used.add(name);
-      const addon = await db.prepare('SELECT * FROM add_ons WHERE name=? AND is_active=1').get(name);
-      if (!addon) fail(400, 'Selected add-on is not active.');
-      const quantity = integer(item.quantity ?? 1, 'Add-on quantity', 1, addon.max_quantity);
-      const optionId = item.optionId === undefined || item.optionId === '' || item.optionId === null ? null : integer(item.optionId, 'Option ID', 1, 1000000);
-      const option = optionId ? await db.prepare('SELECT * FROM add_on_options WHERE id=? AND add_on_id=? AND is_active=1').get(optionId, addon.id) : null;
-      if (optionId && !option) fail(400, 'Color/decoration option does not belong to this add-on.');
-      if (!optionId && (await db.prepare('SELECT 1 FROM add_on_options WHERE add_on_id=? AND is_active=1').get(addon.id))) fail(400, `Choose an available option for ${name}.`);
-      if (requirePrices && addon.unit_price_cents === null) fail(409, `Price for ${name} is not configured. Request a quote from the team.`);
-      return {
-        id: addon.id,
-        name,
-        quantity,
-        optionId,
-        optionName: option ? option.name : null,
-        unit_price_cents: addon.unit_price_cents
-      };
-    }));
-    if (body.addOnItems !== undefined && body.addOns !== undefined) {
-      if (!Array.isArray(body.addOns) || [...new Set(body.addOns)].sort().join('|') !== items.map(i => i.name).sort().join('|')) fail(400, 'Add-on names and detailed selections do not match.');
-    }
-    if (requirePrices && (pkg.base_price_cents === null || pkg.rental_hours === null)) fail(409, 'Package price or rental duration is not configured. Request a quote from the team.');
-    return {
-      pkg,
-      model,
-      variant,
-      modelId,
-      variantId,
-      items
-    };
-  }
-  async function calculateQuote(body) {
-    const s = await catalogSelection(body, true);
-    const subtotal = s.pkg.base_price_cents + s.items.reduce((sum, item) => sum + item.quantity * item.unit_price_cents, 0);
-    if (!Number.isSafeInteger(subtotal) || subtotal > 100000000) fail(400, 'Quote exceeds the supported amount.');
-    // Delivery and special requests are quoted explicitly by staff, not guessed from customer input.
-    return {
-      currency: 'PHP',
-      package_id: s.pkg.id,
-      package_name: s.pkg.name,
-      model_name: s.model ? s.model.name : null,
-      variant: s.variant ? s.variant.name : null,
-      base_price_cents: s.pkg.base_price_cents,
-      rental_hours: s.pkg.rental_hours,
-      inclusions: JSON.parse(s.pkg.inclusions),
-      add_ons: s.items,
-      total_cents: subtotal,
-      deposit_cents: Math.ceil(subtotal / 2),
-      source: 'catalog',
-      delivery_note: 'Contact the team about delivery and any special-request adjustments before paying.'
-    };
-  }
-  app.post('/api/quotes', publicRate, asyncRoute(async (req, res) => res.json({
+  const bookingDomain=rules.domain({db,fail,text,optional,integer,loadPricing:()=>content.setting(db,'pricing')});
+  const catalogSelection=bookingDomain.select;
+  const quoteForSelection=bookingDomain.quote;
+  async function calculateQuote(body){const quote=quoteForSelection(await catalogSelection(body));return {...quote,review_token:hash(JSON.stringify(quote))};}
+  app.post('/api/quotes', quoteRate, asyncRoute(async (req, res) => res.json({
     quote: await calculateQuote(req.body)
   })));
-  app.post('/api/inquiries', publicRate, asyncRoute(async (req, res) => {
+  const submitInquiry = asyncRoute(async (req, res) => {
     const name = text(req.body.name, 'Name', 2, 120);
     const contact = phone(req.body.contact);
-    const mail = req.body.email ? email(req.body.email) : '';
+    const mail = req.user ? req.user.email : req.body.email ? email(req.body.email) : '';
     const day = date(req.body.eventDate, true);
     const time = eventTime(req.body.eventTime);
     eventDateTime(day, time);
     const venue = text(req.body.venue, 'Venue', 2, 1000);
     const notes = optional(req.body.notes, 'Notes', 3000);
-    const selection = await catalogSelection(req.body, false);
+    const selection = await catalogSelection(req.body);
     const details = {
       name,
       contact,
@@ -1120,16 +1068,17 @@ async function start() {
       packageName: selection.pkg.name,
       modelId: selection.modelId,
       variantId: selection.variantId,
-      children: integer(req.body.children, 'Children', 1, 1000),
+      packageId:selection.pkg.id,
+      cityId:selection.city.id,extraHours:selection.extraHours,
       addOns: selection.items.map(i => i.name),
       addOnItems: selection.items.map(i => ({
         name: i.name,
         quantity: i.quantity,
-        optionId: i.optionId
+        optionId:i.optionId,color:i.color,colors:i.colors,eventType:i.eventType,otherEvent:i.otherEvent
       })),
       selectedStyle: optional(req.body.selectedStyle, 'Style', 120)
     };
-    const u = await userFor(req);
+    const u = req.user || await userFor(req);
     const id = await db.transaction(async () => {
       const r = await db.prepare('INSERT INTO inquiries(customer_id,name,email,contact,details) VALUES (?,?,?,?,?)').run(u ? u.id : null, name, mail, contact, JSON.stringify(details));
       await audit(u ? `customer:${u.id}` : 'guest', 'inquiry.created', 'inquiry', r.lastInsertRowid);
@@ -1144,7 +1093,9 @@ async function start() {
       inquiryId: id,
       message: 'Inquiry received. This does not reserve or block the requested date.'
     });
-  }));
+  });
+  app.post('/api/inquiries', publicRate, submitInquiry);
+  app.post('/api/inquiries/mine', asyncRoute(auth), publicRate, submitInquiry);
   app.get('/api/inquiries/mine', asyncRoute(auth), asyncRoute(async (req, res) => res.json({
     inquiries: await db.prepare('SELECT id,details,status,reply,booking_id,created_at FROM inquiries WHERE customer_id=? ORDER BY id DESC LIMIT 200').all(req.user.id)
   })));
@@ -1170,7 +1121,7 @@ async function start() {
         inquiryId: id,
         message: reply
       });
-      await audit('operator', 'inquiry.replied', 'inquiry', id);
+      await audit(req.actor, 'inquiry.replied', 'inquiry', id);
     })();
     res.json({
       success: true,
@@ -1198,9 +1149,9 @@ async function start() {
       const created = await createBooking({
         ...JSON.parse(row.details),
         reservationFeeAccepted: true
-      }, u);
+      }, u, req.actor);
       await db.prepare("UPDATE inquiries SET status='converted',booking_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(created.booking.id, id);
-      await audit('operator', 'inquiry.converted', 'inquiry', id, {
+      await audit(req.actor, 'inquiry.converted', 'inquiry', id, {
         booking_id: created.booking.id
       });
       return created;
@@ -1217,7 +1168,10 @@ async function start() {
     if (!(await db.prepare('SELECT 1 FROM rental_zones WHERE id=?').get(zone))) fail(400, 'Zone not found.');
     const id = await db.transaction(async () => {
       const r = await db.prepare('INSERT INTO rental_models(zone_id,name,description,capacity,image_url) VALUES (?,?,?,?,?)').run(zone, name, description, capacity, image);
-      await audit('operator', 'model.created', 'model', r.lastInsertRowid);
+      if(req.body.includesBalls!==undefined)await db.prepare('UPDATE rental_models SET includes_balls=? WHERE id=?').run(boolean(req.body.includesBalls,'Includes balls')?1:0,r.lastInsertRowid);
+      if(req.body.active===false)await db.prepare('UPDATE rental_models SET is_active=0 WHERE id=?').run(r.lastInsertRowid);
+      if(req.body.packageId)await linkOffer(r.lastInsertRowid,req.body.packageId);
+      await audit(req.actor, 'model.created', 'model', r.lastInsertRowid);
       return r.lastInsertRowid;
     })();
     res.status(201).json({
@@ -1225,15 +1179,32 @@ async function start() {
       id
     });
   }));
+  async function linkOffer(modelId,value){
+    const id=value===''?null:integer(value,'Booking offer',1,1000000);
+    if(id){
+      if(!await db.prepare('SELECT 1 FROM packages WHERE id=?').get(id))fail(400,'Booking offer not found.');
+      await db.prepare('INSERT OR IGNORE INTO package_models(package_id,model_id) VALUES (?,?)').run(id,modelId);
+    }
+    await db.prepare('UPDATE rental_models SET booking_package_id=? WHERE id=?').run(id,modelId);
+  }
   app.put('/api/operator/catalog/models/:id', asyncRoute(async (req, res) => {
     const id = integer(req.params.id, 'Model ID', 1, 1000000);
     const active = boolean(req.body.active, 'Active');
     const capacity = integer(req.body.capacity, 'Capacity', 1, 1000);
-    if (!(await db.prepare('UPDATE rental_models SET is_active=?,capacity=? WHERE id=?').run(active ? 1 : 0, capacity, id)).changes) fail(404, 'Model not found.');
-    await audit('operator', 'model.updated', 'model', id, {
-      active,
-      capacity
-    });
+    await db.transaction(async()=>{
+      const before=await db.prepare('SELECT * FROM rental_models WHERE id=?').get(id);
+      if(!before)fail(404,'Model not found.');
+      const name=req.body.name===undefined?before.name:text(req.body.name,'Name',2,120);
+      const description=req.body.description===undefined?before.description:optional(req.body.description,'Description',1000);
+      const image=req.body.imageUrl===undefined?before.image_url:optional(req.body.imageUrl,'Image',300);
+      const zone=integer(req.body.zoneId??before.zone_id,'Zone',1,1000000);
+      if(!await db.prepare('SELECT 1 FROM rental_zones WHERE id=?').get(zone))fail(400,'Zone not found.');
+      if(image&&!/^\/assets\/photos\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp)$/.test(image))fail(400,'Use a local /assets/photos image path.');
+      const balls=req.body.includesBalls===undefined?before.includes_balls:Number(boolean(req.body.includesBalls,'Includes balls'));
+      await db.prepare('UPDATE rental_models SET is_active=?,capacity=?,name=?,description=?,image_url=?,zone_id=?,includes_balls=? WHERE id=?').run(Number(active),capacity,name,description,image,zone,balls,id);
+      if(req.body.packageId!==undefined)await linkOffer(id,req.body.packageId);
+      await audit(req.actor,'model.updated','model',id,{before,after:{active,capacity,name,description,image,zone,balls,packageId:req.body.packageId}});
+    })();
     res.json({
       success: true
     });
@@ -1243,7 +1214,7 @@ async function start() {
     const name = text(req.body.name, 'Variant name', 1, 120);
     if (!(await db.prepare('SELECT 1 FROM rental_models WHERE id=?').get(modelId))) fail(400, 'Model not found.');
     const r = await db.prepare('INSERT INTO model_variants(model_id,name) VALUES (?,?)').run(modelId, name);
-    await audit('operator', 'variant.created', 'variant', r.lastInsertRowid);
+    await audit(req.actor, 'variant.created', 'variant', r.lastInsertRowid);
     res.status(201).json({
       success: true,
       id: r.lastInsertRowid
@@ -1254,7 +1225,7 @@ async function start() {
     const name = text(req.body.name, 'Color/decor option', 1, 120);
     if (!(await db.prepare('SELECT 1 FROM add_ons WHERE id=?').get(addon))) fail(400, 'Add-on not found.');
     const r = await db.prepare('INSERT INTO add_on_options(add_on_id,name) VALUES (?,?)').run(addon, name);
-    await audit('operator', 'option.created', 'option', r.lastInsertRowid);
+    await audit(req.actor, 'option.created', 'option', r.lastInsertRowid);
     res.status(201).json({
       success: true,
       id: r.lastInsertRowid
@@ -1264,7 +1235,7 @@ async function start() {
     const id = integer(req.params.id, 'Variant ID', 1, 1000000);
     const active = boolean(req.body.active, 'Active');
     if (!(await db.prepare('UPDATE model_variants SET is_active=? WHERE id=?').run(active ? 1 : 0, id)).changes) fail(404, 'Variant not found.');
-    await audit('operator', 'variant.updated', 'variant', id, {
+    await audit(req.actor, 'variant.updated', 'variant', id, {
       active
     });
     res.json({
@@ -1275,7 +1246,7 @@ async function start() {
     const id = integer(req.params.id, 'Option ID', 1, 1000000);
     const active = boolean(req.body.active, 'Active');
     if (!(await db.prepare('UPDATE add_on_options SET is_active=? WHERE id=?').run(active ? 1 : 0, id)).changes) fail(404, 'Option not found.');
-    await audit('operator', 'option.updated', 'option', id, {
+    await audit(req.actor, 'option.updated', 'option', id, {
       active
     });
     res.json({
@@ -1296,7 +1267,7 @@ async function start() {
       await db.prepare('UPDATE packages SET base_price_cents=?,base_price=?,rental_hours=?,inclusions=? WHERE id=?').run(cents, cents / 100, hours, JSON.stringify(inclusions), id);
       await db.prepare('DELETE FROM package_models WHERE package_id=?').run(id);
       for (const model of models) await db.prepare('INSERT INTO package_models VALUES (?,?)').run(id, model);
-      await audit('operator', 'package.pricing_updated', 'package', id, {
+      await audit(req.actor, 'package.pricing_updated', 'package', id, {
         price_cents: cents,
         hours,
         model_ids: models
@@ -1311,7 +1282,7 @@ async function start() {
     const cents = req.body.price === 0 || req.body.price === '0' ? 0 : money(req.body.price, 'Add-on price');
     const max = integer(req.body.maxQuantity, 'Maximum quantity', 1, 1000);
     if (!(await db.prepare('UPDATE add_ons SET unit_price_cents=?,max_quantity=? WHERE id=?').run(cents, max, id)).changes) fail(404, 'Add-on not found.');
-    await audit('operator', 'addon.pricing_updated', 'add_on', id, {
+    await audit(req.actor, 'addon.pricing_updated', 'add_on', id, {
       price_cents: cents,
       max_quantity: max
     });
@@ -1328,7 +1299,7 @@ async function start() {
     await db.transaction(async () => {
       if (!(await available(day))) fail(409, 'This date already has a booking or block; resolve it first.');
       await db.prepare('INSERT INTO date_blocks(event_date,reason) VALUES (?,?)').run(day, reason);
-      await audit('operator', 'date.blocked', 'date', day, {
+      await audit(req.actor, 'date.blocked', 'date', day, {
         reason
       });
     }).immediate();
@@ -1339,7 +1310,7 @@ async function start() {
   app.post('/api/operator/date-blocks/:date/remove', asyncRoute(async (req, res) => {
     const day = date(req.params.date);
     await db.prepare('DELETE FROM date_blocks WHERE event_date=?').run(day);
-    await audit('operator', 'date.unblocked', 'date', day);
+    await audit(req.actor, 'date.unblocked', 'date', day);
     res.json({
       success: true
     });
@@ -1427,11 +1398,12 @@ async function start() {
     } catch (e) {
       console.error('Maintenance failed:', e.code || 'INTERNAL');
     }
-    void deliver().catch(e => console.error('Notification worker failed:', e.code || 'DELIVERY_ERROR'));
+    void deliverScheduledNotices().catch(e => console.error('Notification worker failed:', e.code || 'DELIVERY_ERROR'));
   }, 30000) : null;
   if (timer) timer.unref();
   const server = require.main === module ? app.listen(config.port, config.host, () => {
     console.log(`Bounce Bash customer server: ${config.publicUrl.origin}/Bouncebash_CS/`);
+    console.log(db.driver === 'sqlite' ? `SQLite database: ${require('./backend/database').dbPath}` : `Database driver: ${db.driver}`);
     if (!config.webhookUrl) console.log('Email delivery is not configured. Notifications remain in the private outbox; see README.md.');
     if (!config.operatorKey) console.log('Operator API disabled. Set OPERATOR_API_KEY in .env to enable it.');
   }) : null;
@@ -1450,6 +1422,10 @@ async function start() {
   return app;
 }
 const ready = start();
+if (require.main === module) ready.catch(error => {
+  console.error('Startup failed:', error.code || error.message);
+  process.exit(1);
+});
 module.exports = async (req, res) => {
   try {
     const app = await ready;

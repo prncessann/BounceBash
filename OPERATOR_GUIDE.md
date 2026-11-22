@@ -1,4 +1,12 @@
-# Operator API guide
+# Booking update policy (read first)
+
+The customer wizard uses the fixed delivery, arch/backdrop and extra-hour rules documented in README.md and backend/booking-rules.js. Legacy generic add-on price/quantity settings do not override those rules. Ball colors have no quantity charge; children are not counted for pricing. Private booking-token access and new payment-proof uploads are disabled. All customer booking reads require the signed-in owner. Use authenticated staff access for historical guest records/proofs.
+
+The three-hour hold includes notes-quotation waiting time. Finalize a pending quote with PUT /bookings/:reference/quote and a total plus explanation; original subtotal/components are retained. Expired/cancelled bookings never regain availability from a payment verification. Resolve late funds/refunds separately. Existing admin files are unchanged.
+
+Models may accept optional includesBalls on creation/update. Map a real model to exactly one priced package using the pricing endpoint, or provide an explicit booking_package_id through a controlled database migration when multiple offers exist. The public wizard only shows unambiguous priced items. Production disables demo seeding; deactivate existing demo records before going live.
+
+# Existing operator API reference
 
 Keep `OPERATOR_API_KEY` private. Start the application before using the CLI. Paths below are relative to `/api/operator`. Reads use GET; writes use POST or PUT and a JSON object. `npm run operator -- METHOD PATH JSON` reads the key from `.env`. For complex bodies or Windows shell quoting, save JSON to a file and use `--body-file` as illustrated below.
 

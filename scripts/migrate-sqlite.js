@@ -9,7 +9,11 @@ const path=require('node:path');const fs=require('node:fs');const Database=requi
  try{
    await db.ready;
    if(sqlite.pragma('integrity_check',{simple:true})!=='ok')throw new Error('Source integrity check failed.');
-   const tables=['customers','packages','add_ons','rental_zones','rental_models','model_variants','package_models','add_on_options','bookings','booking_add_ons','payments','inquiries','reviews','newsletter_subscribers','date_blocks','audit_events','notifications'];
+   const {migrateContent}=require('../backend/site-content');
+   await migrateContent(db,{seed:false});
+   await db.prepare('CREATE TABLE IF NOT EXISTS staff_users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)').run();
+   await db.prepare('ALTER TABLE staff_users ENABLE ROW LEVEL SECURITY').run();
+   const tables=['customers','staff_users','packages','add_ons','rental_zones','rental_models','model_variants','package_models','add_on_options','bookings','booking_add_ons','payments','payment_proofs','inquiries','reviews','review_editorial','blog_articles','business_configuration','newsletter_subscribers','date_blocks','audit_events','notifications'];
    let imported=0;
    await db.transaction(async()=>{
     for(const name of tables.filter(n=>!['packages','add_ons','rental_zones'].includes(n)))if((await db.prepare(`SELECT COUNT(*) AS n FROM ${name}`).get()).n>0)throw new Error('Destination contains business data. Import refused; use a new empty database.');
@@ -25,9 +29,10 @@ const path=require('node:path');const fs=require('node:fs');const Database=requi
         if(!keys.length)continue;
         await db.prepare(`INSERT INTO ${table}(${keys.join(',')}) VALUES (${keys.map(()=>'?').join(',')})`).run(...keys.map(k=>row[k]));imported++;
       }
-      if(allowed.includes('id'))await db.prepare(`SELECT setval(pg_get_serial_sequence('bouncebash.${table}','id'),COALESCE(MAX(id),1),COUNT(*)>0) FROM ${table}`).get();
+      if(allowed.includes('id') && !['payment_proofs','staff_users'].includes(table))await db.prepare(`SELECT setval(pg_get_serial_sequence('bouncebash.${table}','id'),COALESCE(MAX(id),1),COUNT(*)>0) FROM ${table}`).get();
     }
    })();
+   await migrateContent(db);
    console.log(`Imported ${imported} rows. Original SQLite file was opened read-only. Existing sessions/recovery tokens were not imported; customers must sign in again.`);
  }finally{sqlite.close();}
 })().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(()=>db.close());

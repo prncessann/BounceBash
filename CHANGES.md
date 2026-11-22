@@ -1,30 +1,29 @@
-# Completed changes from BounceBash(3).zip
+# Customer booking release changes
 
-## Repaired the interrupted update
+- Four-step photo-based rental wizard, synthetic style/color examples, persistent drafts, red required-field validation and clear Back/Continue/Review controls.
+- Server-enforced item/variant compatibility, 17 NCR delivery choices, fixed delivery fees, ₱600 additional hours and no per-child charge.
+- Free ball-color dropdown, ₱400 arches with 1–3 colors and quantity, ₱800 event backdrops with Other text; removed table styling and balloon garland for new requests.
+- Final total for empty notes; pending admin quotation and blocked payment for nonempty notes. Original price components remain preserved after quotation.
+- Signed-in owner booking/profile management; removed guest tracking codes and customer payment proof/OCR UI. Kept authenticated historical proof access and verified-payment print summary.
+- Immediate whole-date hold, three-hour server expiry and owner countdown. Public calendar displays Unavailable. Expiry/cancellation retain payment records and late verification never reactivates a date.
+- SQLite and PostgreSQL schema migration 4, additive demo bootstrap and current regression tests. Historical superseded test sources retained under tests/superseded for reference.
+- All uploaded admin files and the existing database are unchanged. Secret environment files, dependencies, Git metadata and temporary response dumps are excluded from the release ZIP.
 
-- Fixed the startup-breaking `staticRoot` references and replaced root-wide static serving with explicit public mounts.
-- Connected actual phone/time/type/length validation and origin protections to requests.
-- Replaced the unused, spoofable in-memory limiter with atomic database-backed limits. Untrusted `X-Forwarded-For` is ignored unless a trusted proxy is explicitly configured.
-- Preserved the latest upload's configurable database path, original data file, customer-account behavior and isolated test baseline.
+## Customer layout refinement
 
-## Completed backend and customer integration
+- Moved the price breakdown to final review; removed the sidebar and requested caption.
+- Fixed intrinsic fieldset/grid sizing, consistent card gaps and mobile tracks across the customer stylesheet.
+- Removed the large cancellation form from Manage Booking; added a compact profile action beneath status for active bookings, including paid bookings, with an accessible reason dialog.
+- All admin files and the existing database remain unchanged.
 
-- Added the inquiry, catalog relationship/variant, pricing, booking lifecycle, payment verification, date blocking, reporting, audit and notification schemas/services.
-- Added private guest tracking, rescheduling/cancellation, explicit quote/deposit/balance rules, payment-reference submission and protected operational actions.
-- Added verification, secure email changes, expiring single-use recovery, old-session revocation and unsubscribe flows.
-- Added safe dynamic catalog/booking selection, quote preview, inquiry mode, management/account-help pages and inquiry history; refreshed the booking mini-calendar after submissions.
-- Made unconfigured prices, inclusions, durations and options visible as requiring confirmation instead of publishing sample prices as approved business rates.
-- Added PostgreSQL/Supabase migrations, a read-only SQLite import with destination guards, a shared serverless handler, explicit public build, Vercel configuration, local setup/start scripts, operator commands, delivery inspection and backup tooling.
-- Expanded integration tests across SQLite and embedded PostgreSQL; added real-script DOM integration, transaction/backup/import checks and admin hashes.
+## Automatic local setup
 
-## Preserved boundaries
+This ZIP omits private .env and live database files, preserving existing installations during extraction. START_WINDOWS.bat creates missing settings, installs missing dependencies and launches the server. New installations create their database automatically.
 
-Every one of the 11 files under `Bouncebash_Admin/` is byte-for-byte unchanged from the latest uploaded ZIP. The supplied SQLite file is also preserved byte-for-byte in this package. Tests never inserted their fixtures into that file. On first run, normal additive migrations upgrade a working copy and invalidate old plaintext sessions once.
+## Final customer controls fix
 
-The original static admin panel has not been wired to these APIs. Use the protected operator CLI for management until admin integration is separately authorized.
-
-## External and business setup
-
-No Supabase/Vercel account, live deployment, payment account or email provider was created or contacted. Configure approved catalog data and provider/database/domain credentials using README.md and OPERATOR_GUIDE.md. Payment references and refund statuses record manually verified external transactions; the website does not charge or refund money automatically.
-
-Current capacity remains one active booking per date, preserving the prior behavior; the documented hold timeout is configurable. Staff must handle payments associated with expired/cancelled bookings. See README.md for the exact workflow and operating policies.
+- Separated price-preview/read quotas from authenticated booking writes; existing .env files need no changes.
+- Added adjacent success/error feedback, field validation and busy/duplicate-click protection to reschedule and payment forms.
+- Removed sample wording from customer variant labels, including older stored catalog names.
+- Externalized gallery/FAQ scripts for CSP compatibility; updated feedback catalog options and stale calendar/review response handling.
+- Added full button/backend review and expanded regression suites; admin files remain unchanged.

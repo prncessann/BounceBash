@@ -2,26 +2,50 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto');
 const {spawn}=require('node:child_process');const {once}=require('node:events');const root=path.resolve(__dirname,'..');
 const KEY='isolated-test-operator-key-123456789012345';
-async function fixture(options={}){
+async function fixture(options={}, createStaff=false){
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),'bouncebash-workflow-'));
   let received=[];let providerFail=false;
   const provider=http.createServer((req,res)=>{let b='';req.on('data',c=>b+=c);req.on('end',()=>{received.push({data:JSON.parse(b),key:req.headers['idempotency-key']});res.statusCode=providerFail?503:200;res.end('{}');});});
   provider.listen(0,'127.0.0.1');await once(provider,'listening');
   const reserve=http.createServer();reserve.listen(0,'127.0.0.1');await once(reserve,'listening');const port=reserve.address().port;await new Promise(r=>reserve.close(r));
-  const env={...process.env,NODE_ENV:'test',DB_DRIVER:process.env.DB_DRIVER||'sqlite',PORT:String(port),PUBLIC_URL:`http://127.0.0.1:${port}`,OPERATOR_API_KEY:KEY,AUTH_RATE_LIMIT:'1000',PUBLIC_RATE_LIMIT:'2000',BOUNCEBASH_DB_PATH:path.join(temp,'test.sqlite'),PGLITE_PATH:path.join(temp,'postgres'),NOTIFICATION_WEBHOOK_URL:`http://127.0.0.1:${provider.address().port}`,NOTIFICATION_WEBHOOK_KEY:'test-provider',...options};
-  const child=spawn(process.execPath,['server.js'],{cwd:root,env,stdio:['ignore','pipe','pipe']});let log='';child.stdout.on('data',c=>log+=c);child.stderr.on('data',c=>log+=c);
-  const base=`http://127.0.0.1:${port}`;let ready=false;
-  for(let i=0;i<200;i++){if(child.exitCode!==null)throw new Error(log);try{if((await fetch(base+'/health')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,50));}
-  if(!ready)throw new Error('Server not ready: '+log);
-  async function api(url,{method='GET',body,cookie,operator,secret,headers={}}={}){
-    const r=await fetch(base+url,{method,headers:{...(body!==undefined?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),...(operator?{Authorization:`Bearer ${KEY}`} :{}),...(secret?{'X-Booking-Token':secret}:{}),...headers},body:body===undefined?undefined:typeof body==='string'?body:JSON.stringify(body)});
-    const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{data=raw}
-    return {status:r.status,data,cookie:r.headers.get('set-cookie')?.split(';')[0],headers:r.headers};
+  const env={...process.env,NODE_ENV:'test',DB_DRIVER:process.env.DB_DRIVER === 'pglite' ? 'pglite' : 'sqlite',PORT:String(port),PUBLIC_URL:`http://127.0.0.1:${port}`,OPERATOR_API_KEY:KEY,AUTH_RATE_LIMIT:'1000',PUBLIC_RATE_LIMIT:'2000',BOUNCEBASH_DB_PATH:path.join(temp,'test.sqlite'),PGLITE_PATH:path.join(temp,'postgres'),NOTIFICATION_WEBHOOK_URL:`http://127.0.0.1:${provider.address().port}`,NOTIFICATION_WEBHOOK_KEY:'test-provider',...options};
+  let child;
+  async function close() {
+    if (child && child.exitCode === null && child.signalCode === null) {
+      const exited = once(child, 'exit');
+      child.kill();
+      await exited;
+    }
+    await new Promise(resolve => provider.close(resolve));
+    fs.rmSync(temp, { recursive: true, force: true });
   }
-  return {api,env,temp,received,get logs(){return log;},setProviderFail(v){providerFail=v;},async close(){child.kill();if(child.exitCode===null)await once(child,'exit');await new Promise(r=>provider.close(r));fs.rmSync(temp,{recursive:true,force:true});}};
+  try {
+    if (createStaff) {
+      const created = require('node:child_process').spawnSync(process.execPath,
+        ['scripts/create-staff.js', 'staff@example.test', 'Synthetic Staff', 'TestStaffPassword123!'],
+        { cwd: root, env, encoding: 'utf8', timeout: 120_000 });
+      assert.equal(created.status, 0, created.stderr);
+    }
+    child=spawn(process.execPath,['server.js'],{cwd:root,env,stdio:['ignore','pipe','pipe']});let log='';child.stdout.on('data',c=>log+=c);child.stderr.on('data',c=>log+=c);
+    const base=`http://127.0.0.1:${port}`;let ready=false;
+    const deadline=Date.now()+90_000;
+    while(Date.now()<deadline){if(child.exitCode!==null)throw new Error(log);try{if((await fetch(base+'/health')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
+    if(!ready)throw new Error('Server not ready: '+log);
+    async function api(url,{method='GET',body,cookie,operator,secret,headers={}}={}){
+      const r=await fetch(base+url,{method,headers:{...(body!==undefined?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{}),...(operator?{Authorization:`Bearer ${KEY}`} :{}),...(secret?{'X-Booking-Token':secret}:{}),...headers},body:body===undefined?undefined:typeof body==='string'||Buffer.isBuffer(body)?body:JSON.stringify(body)});
+      let data;
+      if (r.headers.get('content-type')?.startsWith('image/')) data = Buffer.from(await r.arrayBuffer());
+      else { const raw = await r.text(); try { data = JSON.parse(raw); } catch { data = raw; } }
+      return {status:r.status,data,cookie:r.headers.get('set-cookie')?.split(';')[0],headers:r.headers};
+    }
+    return {api,env,temp,received,get logs(){return log;},setProviderFail(v){providerFail=v;},close};
+  } catch (error) {
+    await close();
+    throw error;
+  }
 }
 test('customer and protected operational workflows',async t=>{
-  const f=await fixture();t.after(()=>f.close());const api=f.api;
+  const f=await fixture({}, true);t.after(()=>f.close());const api=f.api;
   const good={name:'Synthetic QA',contact:'09123456789',email:'owner@example.test',eventDate:'2090-04-01',eventTime:'10:00',venue:'Synthetic venue',packageName:'Little Bounce',children:8,addOns:[],reservationFeeAccepted:true};
   let owner,other,booking,secret,paymentId,inquiryId,model,variant,option;
   async function check(name,fn){await t.test(name,fn);}
@@ -59,7 +83,61 @@ test('customer and protected operational workflows',async t=>{
   await check('inquiry conversion replay is idempotent',async()=>{const r=await api(`/api/operator/inquiries/${inquiryId}/convert`,{method:'POST',operator:true,body:{customerAcceptedFee:true}});assert.equal(r.status,200);assert.equal(r.data.booking.reference,booking);});
   await check('another customer cannot read/cancel booking',async()=>{assert.equal((await api('/api/bookings/'+booking,{cookie:other})).status,404);assert.equal((await api('/api/bookings/'+booking+'/cancel',{method:'POST',cookie:other,body:{reason:'wrong owner'}})).status,404);});
   await check('confirmation requires verified deposit',async()=>assert.equal((await api('/api/operator/bookings/'+booking+'/status',{method:'PUT',operator:true,body:{status:'confirmed'}})).status,409));
-  await check('pending payment does not count as paid',async()=>{const r=await api('/api/bookings/'+booking+'/payments',{method:'POST',cookie:owner,body:{amount:'2350.26',method:'GCash',reference:'SYNTHETIC-REF-1'}});assert.equal(r.status,201);paymentId=r.data.paymentId;const b=(await api('/api/bookings/'+booking,{cookie:owner})).data.booking;assert.equal(b.paid_cents,0);assert.equal(b.payment_status,'Not Paid');});
+  const syntheticImage = format => require('sharp')({
+    create: { width: 40, height: 20, channels: 3, background: '#efefef' }
+  }).toFormat(format).toBuffer();
+  const upload = (body, credentials, headers = {}, reference = booking) => api('/api/bookings/' + reference + '/payments', {
+    method: 'POST', body, ...credentials, headers: {
+      'Content-Type': 'image/png', 'X-Payment-Amount': '2350.26',
+      'X-Payment-Reference': 'SYNTHETIC-REF-1', 'X-Payment-Method': 'GCash', ...headers
+    }
+  });
+  let receipt, proofPath;
+  await check('proof validation rejects corrupt, spoofed, unsupported, oversized and cross-origin uploads', async () => {
+    receipt = await syntheticImage('png');
+    assert.equal((await upload(receipt.subarray(0, -12), { cookie: owner })).status, 400);
+    assert.equal((await upload(await syntheticImage('jpeg'), { cookie: owner })).status, 400);
+    assert.equal((await upload(receipt, { cookie: owner }, { 'Content-Type': 'image/gif' })).status, 415);
+    assert.equal((await upload(Buffer.alloc(5 * 1024 * 1024 + 1), { cookie: owner })).status, 413);
+    assert.equal((await upload(receipt, { cookie: other })).status, 404);
+    assert.equal((await upload(receipt, { cookie: owner }, { Origin: 'https://untrusted.example' })).status, 403);
+    const loaded = await api('/api/bookings/' + booking, { cookie: owner });
+    assert.deepEqual(loaded.data.booking.payments, []);
+  });
+  await check('pending payment does not count as paid',async()=>{const r=await upload(receipt,{cookie:owner});assert.equal(r.status,201);paymentId=r.data.paymentId;const b=(await api('/api/bookings/'+booking,{cookie:owner})).data.booking;assert.equal(b.paid_cents,0);assert.equal(b.payment_status,'Not Paid');
+    assert.ok(b.payments[0].proof_id);
+    proofPath = '/api/bookings/' + booking + '/payment-proofs/' + b.payments[0].proof_id;
+  });
+  await check('proof retrieval requires the booking owner, private token or operator authorization', async () => {
+    const owned = await api(proofPath, { cookie: owner });
+    assert.equal(owned.status, 200);
+    assert.deepEqual(owned.data, receipt);
+    assert.equal(owned.headers.get('cache-control'), 'no-store');
+    assert.match(owned.headers.get('content-disposition'), /^attachment/);
+    assert.equal((await api(proofPath)).status, 404);
+    assert.equal((await api(proofPath, { cookie: other })).status, 404);
+    assert.equal((await api(proofPath, { secret })).status, 200);
+    const staffPath = '/api/operator/payments/' + paymentId + '/proof';
+    assert.equal((await api(staffPath, { cookie: owner })).status, 401);
+    assert.deepEqual((await api(staffPath, { operator: true })).data, receipt);
+    const staff = await api('/api/staff/login', {
+      method: 'POST', body: { email: 'staff@example.test', password: 'TestStaffPassword123!' }
+    });
+    assert.equal(staff.status, 200);
+    assert.deepEqual((await api(staffPath, { cookie: staff.cookie })).data, receipt);
+  });
+  await check('duplicate and overpayment proof uploads leave the original payment intact', async () => {
+    const changedProof = await syntheticImage('webp');
+    assert.equal((await upload(changedProof, { cookie: owner }, {
+      'Content-Type': 'image/webp', 'X-Payment-Amount': '1', 'X-Payment-Reference': 'synthetic-ref-1'
+    })).status, 409);
+    assert.equal((await upload(receipt, { cookie: owner }, {
+      'X-Payment-Amount': '4700.51', 'X-Payment-Reference': 'SYNTHETIC-PROOF-OVER'
+    })).status, 409);
+    const b = (await api('/api/bookings/' + booking, { cookie: owner })).data.booking;
+    assert.equal(b.payments.length, 1);
+    assert.deepEqual((await api(proofPath, { cookie: owner })).data, receipt);
+  });
   await check('customer cannot verify payment',async()=>assert.equal((await api('/api/operator/payments/'+paymentId,{method:'PUT',cookie:owner,body:{status:'verified',note:'pretend'}})).status,401));
   await check('duplicate reference rejected case-insensitively',async()=>assert.equal((await api('/api/bookings/'+booking+'/payments',{method:'POST',cookie:owner,body:{amount:'1',method:'GCash',reference:'synthetic-ref-1'}})).status,409));
   await check('overpayment including pending amount rejected',async()=>assert.equal((await api('/api/bookings/'+booking+'/payments',{method:'POST',cookie:owner,body:{amount:'4700.51',method:'GCash',reference:'SYNTHETIC-OVER'}})).status,409));
@@ -71,6 +149,36 @@ test('customer and protected operational workflows',async t=>{
   await check('manual date block prevents quote booking',async()=>{assert.equal((await api('/api/operator/date-blocks',{method:'POST',operator:true,body:{date:'2090-04-03',reason:'Synthetic maintenance'}})).status,201);assert.equal((await api('/api/bookings',{method:'POST',body:{...good,eventDate:'2090-04-03'}})).status,409);assert.equal((await api('/api/availability/month?year=2090&month=4')).data.unavailableDates.find(d=>d.date==='2090-04-03').status,'blocked');await api('/api/operator/date-blocks/2090-04-03/remove',{method:'POST',operator:true,body:{}});});
   await check('concurrent same-date submissions create exactly one booking',async()=>{const r=await Promise.all(Array.from({length:8},()=>api('/api/bookings',{method:'POST',body:{...good,eventDate:'2090-05-01'}})));assert.equal(r.filter(r=>r.status===201).length,1);assert.equal(r.filter(r=>r.status===409).length,7);});
   await check('guest lookup requires private token',async()=>{const r=await api('/api/bookings',{method:'POST',body:{...good,eventDate:'2090-05-02'}});assert.equal(r.status,201);assert.equal((await api('/api/bookings/'+r.data.booking.reference)).status,404);assert.equal((await api('/api/bookings/'+r.data.booking.reference,{secret:r.data.booking.accessToken})).status,200);});
+  await check('a guest can attach a proof and can retrieve only proofs for their own booking', async () => {
+    const guest = await api('/api/bookings', { method: 'POST', body: { ...good, eventDate: '2090-05-04' } });
+    assert.equal(guest.status, 201);
+    const guestRef = guest.data.booking.reference;
+    const guestSecret = guest.data.booking.accessToken;
+    const image = await syntheticImage('jpeg');
+    assert.equal((await upload(image, {}, { 'Content-Type': 'image/jpeg' }, guestRef)).status, 404);
+    const payment = await upload(image, { secret: guestSecret }, {
+      'Content-Type': 'image/jpeg', 'X-Payment-Amount': '1', 'X-Payment-Reference': 'SYNTHETIC-GUEST-1'
+    }, guestRef);
+    assert.equal(payment.status, 201);
+    const b = (await api('/api/bookings/' + guestRef, { secret: guestSecret })).data.booking;
+    const guestPath = '/api/bookings/' + guestRef + '/payment-proofs/' + b.payments[0].proof_id;
+    assert.equal((await api(guestPath)).status, 404);
+    assert.equal((await api(guestPath, { secret: guestSecret })).status, 200);
+    assert.equal((await api(proofPath.replace(booking, guestRef), { secret: guestSecret })).status, 404);
+  });
+  await check('bookings save detailed add-ons without requiring duplicate legacy fields, and proofs remain optional', async () => {
+    const { addOns, ...body } = selection();
+    const created = await api('/api/bookings', { method: 'POST', cookie: owner, body: { ...body, eventDate: '2090-05-05' } });
+    assert.equal(created.status, 201);
+    const url = '/api/bookings/' + created.data.booking.reference;
+    const result = await api(url + '/payments', { method: 'POST', cookie: owner,
+      body: { amount: '1', method: 'Cash', reference: 'SYNTHETIC-NO-PROOF' } });
+    assert.equal(result.status, 201);
+    const { booking: loaded } = (await api(url, { cookie: owner })).data;
+    assert.deepEqual(loaded.add_ons, ['Ball colors']);
+    assert.equal(loaded.quote.add_ons[0].quantity, 2);
+    assert.equal(loaded.payments[0].proof_id, null);
+  });
   await check('cancellation retains payment records and releases date',async()=>{const r=await api('/api/bookings/'+booking+'/cancel',{method:'POST',cookie:owner,body:{reason:'Synthetic cancellation'}});assert.equal(r.status,200);assert.equal(r.data.booking.paid_cents,235026);assert.ok(r.data.booking.refund_note);assert.equal((await api('/api/availability?date=2090-04-02')).data.available,true);});
   await check('cancelled booking cannot be reconfirmed',async()=>assert.equal((await api('/api/operator/bookings/'+booking+'/status',{method:'PUT',operator:true,body:{status:'confirmed'}})).status,409));
   await check('refund recording is explicit and affects reports',async()=>{assert.equal((await api('/api/operator/payments/'+paymentId,{method:'PUT',operator:true,body:{status:'refunded',note:'Synthetic external refund receipt recorded'}})).status,200);const r=await api('/api/operator/reports?from=2026-01-01&to=2090-12-31',{operator:true});assert.equal(r.status,200);assert.equal(r.data.recorded_refunded_cents,235026);assert.equal(r.data.verified_collected_cents,0);});

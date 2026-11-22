@@ -6,57 +6,19 @@
 href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=
 Montserrat:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
-</head><body class="rpt">
+<link rel="icon" type="image/png" href="assets/logo-full.png"></head><body class="rpt">
 <div class="app">
 <aside><a href="index.html"><img class="logo-img" src="assets/logo-full.png" alt="Bounce
 Bash"></a><div class="sub">ADMIN PANEL</div>
 <nav>
 <a href="index.html">Dashboard</a>
-<a href="bookings.html" class="on">Bookings<span class="badge">3</span></a>
+<a href="bookings.html" class="on">Bookings</a>
 <a href="calendar.html">Calendar</a>
 <a href="reports.html">Reports</a>
 <a href="packages.html">Packages</a>
 <a href="blog.html">Blog & Feedback</a>
 <a href="settings.html">Settings</a>
 </nav>
-<div class="who"><span class="av">A</span><span>Admin<br><span class="mu">View
-website</span></span></div></aside>
-<main>
-<section class="card" id="live-panel" style="margin-bottom:16px">
-<h3 style="margin-top:0">Operator tools</h3>
-<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span id="live-user" class="mu" style="font-size:12px"></span><button type="button" class="btn" id="live-signout">Sign out</button></div>
-<p id="live-msg" class="mu" style="font-size:12px;margin:8px 0 0"></p>
-<div id="live-detail" style="margin-top:12px"></div>
-</section>
-
-<div class="bk"><div class="top"><div><h1>Bookings</h1><p class="desc">All reservations in
-one place, with payment status at a glance.</p></div><div class="acts"><span
-class="sync"><i></i>Synced 1 min ago</span><a class="btn dark" href="bookings.html">+ New
-booking</a></div></div><h2 style="margin:0 0 10px">Needs attention</h2><div class="grid"
-style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:18px"><div
-class="card alert"><h3>Not paid <span class="pill p0">3</span></h3><p class="desc"
-style="margin-bottom:6px">No payment received yet</p><div><b><a href="#b-1044">BB-1044
-Ben Uy</a></b><br><span class="mu">Not paid · event Oct 24 · Balance PHP
-6,500</span></div><div><b><a href="#b-1040">BB-1040 Angela Cruz</a></b><br><span
-class="mu">Not paid · event Oct 31 · Balance PHP 8,500</span></div><div><b><a
-href="#b-1037">BB-1037 Paolo Garcia</a></b><br><span class="mu">Not paid · event Nov 8 ·
-Balance PHP 12,000</span></div></div><div class="card alert warn"><h3>Balance due <span
-class="pill p1">4</span></h3><p class="desc" style="margin-bottom:6px">Downpayment
-received, remaining balance unpaid</p><div><b><a href="#b-1041">BB-1041 Jose
-Reyes</a></b><br><span class="mu">Downpayment paid · event Oct 25 · Balance PHP
-6,000</span></div><div><b><a href="#b-1039">BB-1039 Ramon Dela
-Cruz</a></b><br><span class="mu">Downpayment paid · event Nov 1 · Balance PHP
-3,250</span></div><div><b><a href="#b-1035">BB-1035 Carlo Ramos</a></b><br><span
-class="mu">Downpayment paid · event Nov 15 · Balance PHP 3,250</span></div><div><b><a
-href="#b-1033">BB-1033 Miguel Torres</a></b><br><span class="mu">Downpayment paid ·
-
-event Nov 22 · Balance PHP 9,250</span></div></div></div><input type="radio" class="fr"
-name="flt" id="fa" checked><input type="radio" class="fr" name="flt" id="fn"><input type="radio"
-class="fr" name="flt" id="f0"><input type="radio" class="fr" name="flt" id="f1"><input
-type="radio" class="fr" name="flt" id="f2"><div class="chips"><label class="chip" for="fa"
-data-f="fa">All bookings (11)</label><label class="chip" for="fn" data-f="fn">Needs attention
-(7)</label><label class="chip" for="f0" data-f="f0">Not paid</label><label class="chip" for="f1"
-data-f="f1">Downpayment paid</label><label class="chip" for="f2" data-f="f2">Paid in
-full</label></div><div class="card tw" style="padding:0"><table><thead><tr><th>Payment</th><th>Booking</th><th>Customer</th><th>Event date &amp; time</th><th>Package &amp; add-ons</th><th>Total</th><th>Balance</th></tr></thead><tbody id="live-rows"><tr><td colspan="7" class="mu">Connect with the operator key to load bookings.</td></tr></tbody></table></div><p class="desc">11 bookings in total</p></div>
-</main></div>
-<script src="admin-bookings.js"></script><script src="admin-nav.js"></script></body></html>
+<div class="who"><span class="av">A</span><span><span id="staff-name">Staff</span><br><a class="mu" href="/Bouncebash_CS/">View website</a></span></div></aside>
+<main data-admin-page="bookings"><div class="top"><div><h1>Bookings</h1><p class="desc">Manage customer bookings, payment references and inquiries.</p></div><div class="acts"><span class="sync" id="admin-refresh-time">Waiting for data</span><button class="btn" id="admin-refresh">Refresh</button><button class="btn" id="admin-sign-out">Sign out</button></div></div><p class="mu" id="admin-message" role="status" aria-live="polite">Loading?</p><div id="admin-content"></div></main></div>
+<script src="admin-nav.js"></script><script defer src="admin-operational.js"></script></body></html>

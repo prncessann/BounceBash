@@ -11,7 +11,7 @@
   <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html" class="active">Home</a>
-    <a href="styles.html">Styles</a>
+    
     <a href="packages.html">Packages</a>
     <a href="add-ons.html">Add-ons</a>
     <a href="gallery.html">Gallery</a>
@@ -68,7 +68,7 @@
       <p class="small muted" id="mini-calendar-message" role="status"></p>
       <div class="legend">
         <span><span class="dot available"></span> Available</span>
-        <span><span class="dot pending"></span> Request pending</span>
+        <span><span class="dot pending"></span> Unavailable</span>
         <span><span class="dot booked"></span> Unavailable</span>
       </div>
     </div>
@@ -79,50 +79,8 @@
   <p class="eyebrow center">Packages</p>
   <h2 class="center">Featured rental packages</h2>
 
-  <div class="pkg-tier">
-    <div class="pkg-tier-title">Bounce &amp; Play</div>
-    <div class="card-grid grid-three">
-      <div class="package-card" data-package-id="little-bounce">
-        <a href="packages.html"><img src="../assets/photos/castle-bounce-cake-table.jpg" alt="Little Bounce package"></a>
-        <h3>Little Bounce</h3>
-        <!-- sample price, replace with confirmed rate -->
-        <p class="price">PHP 4,500</p>
-        <p class="muted">A single bounce house for a smaller celebration.</p>
-        <a href="packages.html" class="btn btn-outline">View Package</a>
-      </div>
-      <div class="package-card" data-package-id="ball-pit-bash">
-        <a href="packages.html"><img src="../assets/photos/kids-in-ball-pit-pastel.jpg" alt="Ball Pit Bash package"></a>
-        <h3>Ball Pit Bash</h3>
-        <!-- sample price, replace with confirmed rate -->
-        <p class="price">PHP 5,500</p>
-        <p class="muted">A ball pit for toddlers and little ones to play in.</p>
-        <a href="packages.html" class="btn btn-outline">View Package</a>
-      </div>
-      <div class="package-card" data-package-id="bash-and-bounce">
-        <a href="packages.html"><img src="../assets/photos/bounce-house-garden-kids.jpg" alt="Bash &amp; Bounce package"></a>
-        <h3>Bash &amp; Bounce</h3>
-        <!-- sample price, replace with confirmed rate -->
-        <p class="price">PHP 8,500</p>
-        <p class="muted">A bounce house and ball pit together for a fuller party.</p>
-        <a href="packages.html" class="btn btn-outline">View Package</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="pkg-tier">
-    <div class="pkg-tier-title">Premium</div>
-    <div class="card-grid grid-one">
-      <div class="package-card featured" data-package-id="the-luxe-bash">
-        <span class="tag">Most Luxe</span>
-        <a href="packages.html"><img src="../assets/photos/balloon-arch-outdoor-lounge.jpg" alt="The Luxe Bash package"></a>
-        <h3>The Luxe Bash</h3>
-        <!-- sample price, replace with confirmed rate -->
-        <p class="price">PHP 12,500</p>
-        <p class="muted">Our most complete setup, with balloon décor included.</p>
-        <a href="packages.html" class="btn btn-outline">View Package</a>
-      </div>
-    </div>
-  </div>
+  <div id="featured-rentals" class="rental-grid card-grid" aria-live="polite"></div>
+  <div class="button-row center"><a href="packages.html" class="btn btn-outline">Browse all rentals</a></div>
 </section>
 
 <section class="testimonials" id="testimonials">
@@ -176,15 +134,9 @@
     <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
-      <img src="../assets/logo/instagram.png" alt="Instagram">
-    </a>
-    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
-      <img src="../assets/logo/facebook.png" alt="Facebook">
-    </a>
-    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
-      <img src="../assets/logo/tiktok.png" alt="TikTok">
-    </a>
+    
+    
+    
   </div>
   </div>
   <div class="footer-col">
@@ -269,5 +221,5 @@
 </div>
 
 <script src="site.js"></script><script src="catalog-tools.js"></script>
-</body>
+<script src="blog-content.js" defer></script></body>
 </html>

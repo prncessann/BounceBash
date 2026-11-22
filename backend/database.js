@@ -93,12 +93,18 @@ db.ready=(async()=>{
     pool.on('error',error=>console.error('PostgreSQL idle connection error:',error.code||'DB_ERROR'));
   }
   const schema=fs.readFileSync(path.join(__dirname,'..','migrations','001_postgres.sql'),'utf8');
-  if(driver==='pglite'){const installed=await pool.query("SELECT to_regclass('bouncebash.schema_migrations') AS present");if(!installed.rows[0].present)await pool.exec(schema);else await pool.exec('SET search_path TO bouncebash,public');}
+  const proofSchema=fs.readFileSync(path.join(__dirname,'..','migrations','002_payment_proofs.sql'),'utf8');
+  const wizardSchema=fs.readFileSync(path.join(__dirname,'..','migrations','003_booking_wizard.sql'),'utf8');
+  const needsWizardMigration=async client=>!(await client.query('SELECT 1 FROM bouncebash.schema_migrations WHERE version=4')).rows.length;
+  const needsProofMigration = async client => !(await client.query('SELECT 1 FROM bouncebash.schema_migrations WHERE version=3')).rows.length;
+  if(driver==='pglite'){const installed=await pool.query("SELECT to_regclass('bouncebash.schema_migrations') AS present");if(!installed.rows[0].present)await pool.exec(schema);else await pool.exec('SET search_path TO bouncebash,public');if(await needsProofMigration(pool))await pool.exec(proofSchema);if(await needsWizardMigration(pool))await pool.exec(wizardSchema);}
   else{
     const client=await pool.connect();try{
       await client.query('BEGIN');await client.query('SELECT pg_advisory_xact_lock(42037001)');
       const installed=await client.query("SELECT to_regclass('bouncebash.schema_migrations') AS present");
       if(!installed.rows[0].present)await client.query(schema);
+      if(await needsProofMigration(client))await client.query(proofSchema);
+      if(await needsWizardMigration(client))await client.query(wizardSchema);
       await client.query('COMMIT');
     }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
   }

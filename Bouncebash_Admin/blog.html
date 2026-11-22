@@ -4,41 +4,18 @@
 <title>Blog & Feedback – Bounce Bash PH Admin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Montserrat:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
-</head><body class="rpt">
+<link rel="icon" type="image/png" href="assets/logo-full.png"></head><body class="rpt">
 <div class="app">
 <aside><a href="index.html"><img class="logo-img" src="assets/logo-full.png" alt="Bounce Bash"></a><div class="sub">ADMIN PANEL</div>
 <nav>
 <a href="index.html">Dashboard</a>
-<a href="bookings.html">Bookings<span class="badge">3</span></a>
+<a href="bookings.html">Bookings</a>
 <a href="calendar.html">Calendar</a>
 <a href="reports.html">Reports</a>
 <a href="packages.html">Packages</a>
 <a href="blog.html" class="on">Blog & Feedback</a>
 <a href="settings.html">Settings</a>
 </nav>
-<div class="who"><span class="av">A</span><span>Admin<br><span class="mu">View website</span></span></div></aside>
-<main>
-<div class="top"><div><h1>Blog &amp; Feedback</h1><p class="desc">Manage posts and approve customer reviews.</p></div><div class="acts"><a class="btn dark" href="#">+ New post</a></div></div>
-<div class="grid g4" style="margin-bottom:14px"><div class="card stat"><div class="l">Published posts</div><div class="v">6</div><div class="s">On the Featured page</div></div><div class="card stat"><div class="l">Drafts</div><div class="v">1</div><div class="s">Not visible to customers</div></div><div class="card stat"><div class="l">Reviews shown</div><div class="v">3</div><div class="s">Live on Client Feedback</div></div><div class="card stat"><div class="l">Waiting for approval</div><div class="v">3</div><div class="s">Check before they go live</div></div></div>
-<h2 style="margin:6px 0 10px">Blog posts</h2>
-<div class="card tw" style="padding:0"><table><thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Status</th></tr></thead><tbody>
-<tr><td><b>The complete guide to planning a stress-free kids' party</b></td><td class="mu">Guide</td><td class="mu">Oct 12</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>How to pick the right inflatable for your guest list</b></td><td class="mu">Guide</td><td class="mu">Oct 5</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>Indoor or outdoor? Choosing the best space for your bounce house</b></td><td class="mu">Guide</td><td class="mu">Sep 28</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>5 neutral party themes that photograph beautifully</b></td><td class="mu">Inspiration</td><td class="mu">Sep 20</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>Ball pit color combinations that always look good</b></td><td class="mu">Inspiration</td><td class="mu">Sep 14</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>Our setup checklist: what happens before the first bounce</b></td><td class="mu">Behind the scenes</td><td class="mu">Sep 7</td><td><span class="pill p2">Published</span></td></tr>
-<tr><td><b>A day with our delivery and setup crew</b></td><td class="mu">Behind the scenes</td><td class="mu">Not yet published</td><td><span class="pill p1">Draft</span></td></tr>
-</tbody></table></div>
-<h2 style="margin:22px 0 10px">Customer feedback</h2>
-<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
-<div class="card"><div class="row" style="padding:0"><b>Maria Santos</b><span class="pill p1">Waiting for approval</span></div><div class="mu" style="font-size:11px">Birthday party · Little Bounce</div><p style="margin:10px 0 0">The bounce house was spotless and the setup team arrived on time. The kids did not want to leave.</p></div>
-<div class="card"><div class="row" style="padding:0"><b>Ramon Dela Cruz</b><span class="pill p1">Waiting for approval</span></div><div class="mu" style="font-size:11px">Christening · Ball Pit Bash</div><p style="margin:10px 0 0">Everything was delivered and set up before the guests arrived. The ball pit was a big hit with the toddlers.</p></div>
-<div class="card"><div class="row" style="padding:0"><b>Lisa Mendoza</b><span class="pill p1">Waiting for approval</span></div><div class="mu" style="font-size:11px">School event · Bash &amp; Bounce</div><p style="margin:10px 0 0">Booking was simple, and the team supervised the whole event. The balloon arch made the photos look beautiful.</p></div>
-<div class="card"><div class="row" style="padding:0"><b>Jose Reyes</b><span class="pill p2">Shown on website</span></div><div class="mu" style="font-size:11px">Barangay festival · The Luxe Bash</div><p style="margin:10px 0 0">Set up was quick and the staff kept the kids safe the whole afternoon.</p></div>
-<div class="card"><div class="row" style="padding:0"><b>Angela Cruz</b><span class="pill p2">Shown on website</span></div><div class="mu" style="font-size:11px">Baby shower · Ball Pit Bash</div><p style="margin:10px 0 0">Soft colors matched our theme perfectly. Very easy to book.</p></div>
-<div class="card"><div class="row" style="padding:0"><b>Ben Uy</b><span class="pill p2">Shown on website</span></div><div class="mu" style="font-size:11px">Resort event · Little Bounce</div><p style="margin:10px 0 0">Great for our family day. We will book again next year.</p></div>
-</div>
-</main></div>
-
-<script src="admin-nav.js"></script></body></html>
+<div class="who"><span class="av">A</span><span><span id="staff-name">Staff</span><br><a class="mu" href="/Bouncebash_CS/">View website</a></span></div></aside>
+<main data-admin-page="blog"><div class="top"><div><h1>Blog & Feedback</h1><p class="desc">Publish articles and moderate customer feedback.</p></div><div class="acts"><span class="sync" id="admin-refresh-time">Waiting for data</span><button class="btn" id="admin-refresh">Refresh</button><button class="btn" id="admin-sign-out">Sign out</button></div></div><p class="mu" id="admin-message" role="status" aria-live="polite">Loading?</p><div id="admin-content"></div></main></div>
+<script src="admin-nav.js"></script><script defer src="admin-operational.js"></script></body></html>

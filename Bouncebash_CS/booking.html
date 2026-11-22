@@ -11,7 +11,7 @@
   <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
   <nav class="site-nav">
     <a href="index.html">Home</a>
-    <a href="styles.html">Styles</a>
+    
     <a href="packages.html">Packages</a>
     <a href="add-ons.html">Add-ons</a>
     <a href="gallery.html">Gallery</a>
@@ -25,74 +25,37 @@
   </div>
 </header>
 
-<section class="page-header">
-  <p class="eyebrow">Booking form | Check availability</p>
-  <h1>Book Your Party</h1>
-  <p class="lead">Send your reservation request and check if your date is open. We will confirm within 24 hours.</p>
+<section class="page-header wizard-page-header"><p class="eyebrow">Your celebration, step by step</p><h1>Book Your Party</h1><p class="lead">Choose your rental, customize your setup, and review the full price before submitting.</p></section>
+<section class="wizard-layout" id="booking-app">
+<div class="wizard-main">
+<div id="booking-auth" class="card auth-notice" hidden><h2>Sign in to finish booking</h2><p>Your booking is saved to your profile. You can browse rentals first; sign in before continuing to event details.</p><a class="btn btn-dark" id="booking-sign-in" href="login.html?next=booking.html">Sign in</a><a class="btn btn-outline" href="signup.html?next=booking.html">Create account</a></div>
+<div id="wizard-loading" class="card" role="status">Loading rental options...</div>
+<ol class="wizard-steps" id="wizard-steps" aria-label="Booking progress" hidden><li>Choose rental</li><li>Event details</li><li>Add-ons</li><li>Review</li></ol>
+<form id="booking-form" data-wizard="true" novalidate hidden>
+<section class="wizard-panel card" data-step="0" aria-labelledby="step-rental-title"><h2 id="step-rental-title" tabindex="-1">1. Choose your rental</h2><p>Select the actual inflatable from a photo, then choose its supported style/color. Photos illustrate the available rental designs.</p>
+<div class="field"><label for="zone-filter">Filter by zone</label><select id="zone-filter"><option value="">All zones</option></select></div>
+<fieldset class="rental-choices"><legend>Rental item <span aria-hidden="true">*</span></legend><div class="rental-grid" id="rental-grid"></div><p id="rental-error" class="field-error" hidden></p></fieldset>
+<div class="field"><label for="rental-variant">Style/color variant <span aria-hidden="true">*</span></label><select id="rental-variant" required aria-describedby="variant-hint"><option value="">Choose a rental first</option></select><p class="muted small" id="variant-hint">Photos illustrate the rental; they do not change with every color choice.</p></div>
+<div class="sample-swatches" aria-label="Color examples"><span><i style="background:#fff"></i>White</span><span><i style="background:#fff2d6"></i>Cream</span><span><i style="background:#c9dac1"></i>Sage</span><span><i style="background:#e7d0ef"></i>Lavender</span><span><i style="background:#ffd7df"></i>Blush</span></div><p class="small muted">Synthetic color examples; actual material may vary.</p><div id="rental-safety" class="muted small"></div>
 </section>
-<section class="booking-layout pt-40">
-  <div class="booking-form card">
-    <h2>Reservation or inquiry details</h2>
-    <form id="booking-form"><div class="field"><label for="request-type">Request type</label><select id="request-type"><option value="booking">Booking request (temporary date hold)</option><option value="inquiry">Inquiry only (does not reserve a date)</option></select></div>
-      <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" placeholder="Full name" minlength="2" required></div>
-      <div class="field"><label for="booking-email">Email for booking updates (optional)</label><input type="email" id="booking-email" name="email" maxlength="254" autocomplete="email"></div>
-      <div class="field"><label for="contact">Contact number</label><input type="tel" id="contact" name="contact" placeholder="09XX XXX XXXX" required></div>
-      <div class="grid-two">
-        <div class="field"><label for="event-date">Event date</label><input type="date" id="event-date" name="event-date" required></div>
-        <div class="field"><label for="event-time">Event time</label><input type="time" id="event-time" name="event-time" required></div>
-      </div>
-      <div class="field"><label for="venue">Venue</label><input type="text" id="venue" name="venue" placeholder="Full address of the event venue" required></div>
-      <div class="grid-two">
-        <div class="field"><label for="package">Selected rental / package</label>
-          <select id="package" name="package" required><option value="">Choose a package</option></select></div>
-        <div class="field"><label for="children">Number of children</label><input type="number" id="children" name="children" min="1" placeholder="e.g. 15" required></div>
-      </div>
-      <div class="grid-two"><div class="field"><label for="booking-zone">Rental zone</label><select id="booking-zone"></select></div><div class="field"><label for="booking-model">Rental model</label><select id="booking-model"></select></div></div><div class="field"><label for="booking-variant">Available style / color variant</label><select id="booking-variant"></select></div><fieldset class="addons">
-        <legend>Add-ons</legend>
-        <div id="booking-addons"></div>
-      </fieldset>
-      <input type="hidden" id="selected-style" name="selectedStyle">
-      <p id="selected-style-message" class="muted small" hidden></p>
-      <div class="field"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="5" placeholder="Theme, color preferences, special requests..."></textarea></div>
-      <label class="checkbox-line"><input type="checkbox" id="reservation-fee" required> I understand that a 50% reservation fee is required to secure my date.</label>
-      <button type="button" class="btn btn-outline" id="preview-quote">Preview catalog quote</button><p id="quote-message" role="status"></p><button type="submit" class="btn btn-dark btn-block">Submit Booking Request</button>
-      <p id="date-status" class="small mt-12" role="status"></p>
-      <p><a href="manage-booking.html">Track an existing booking</a></p>
-      <p id="booking-message" class="small mt-12" role="status"></p>
-    </form>
-    <p class="muted small">Your details are only used to process your booking. We will contact you by phone or message to confirm.</p>
-  </div>
-  <aside class="booking-side">
-    <div class="card">
-      <h2>Current month availability</h2>
-      <p class="muted small" id="booking-mini-calendar-month">Loading...</p>
-      <div class="mini-cal" id="booking-mini-calendar" aria-label="Current month date availability"></div>
-      <p class="small muted" id="booking-mini-calendar-message" role="status"></p>
-      <div class="legend">
-        <span><span class="dot available"></span> Available</span>
-        <span><span class="dot pending"></span> Request pending</span>
-        <span><span class="dot booked"></span> Unavailable</span>
-      </div>
-      <p class="muted small">Choose the event date in the form. See full calendar for other months.</p>
-      <a href="calendar.html" class="btn btn-outline">Open full calendar</a>
-    </div>
-    <div class="card hoverable">
-      <h2>How booking works</h2>
-      <ol class="good-list good-list list-decimal">
-        <li><strong>Choose</strong>: pick a package and your add-ons</li>
-        <li><strong>Submit</strong>: send the reservation request form</li>
-        <li><strong>Reserve</strong>: pay the 50% reservation fee</li>
-        <li><strong>Celebrate</strong>: we deliver, set up and supervise</li>
-      </ol>
-    </div>
-    <div class="card hoverable">
-      <h2>Have questions first?</h2>
-      <p>Delivery charges, down payment and setup/pick-up are covered in our FAQ.</p>
-      <a href="faq.html" class="btn btn-outline">Read FAQ</a>
-    </div>
-  </aside>
+<section class="wizard-panel card" data-step="1" aria-labelledby="step-details-title" hidden><h2 id="step-details-title" tabindex="-1">2. Event details</h2>
+<div class="grid-two"><div class="field"><label for="name">Full name *</label><input id="name" name="name" autocomplete="name" minlength="2" maxlength="120" required></div><div class="field"><label for="contact">Contact number *</label><input id="contact" name="contact" type="tel" autocomplete="tel" maxlength="30" required></div>
+<div class="field"><label for="event-date">Event date *</label><input id="event-date" type="date" required></div><div class="field"><label for="event-time">Event time (Philippine time) *</label><input id="event-time" type="time" required></div></div><p id="date-status" role="status" class="small"></p>
+<div class="field"><label for="city-id">City/Municipality (NCR) *</label><select id="city-id" required><option value="">Choose your city/municipality</option></select></div>
+<div class="field"><label for="venue">Full venue address *</label><textarea id="venue" name="venue" rows="3" minlength="2" maxlength="1000" autocomplete="street-address" required></textarea></div>
+<div class="field"><label for="extra-hours">Additional rental hours</label><select id="extra-hours"></select><p id="included-hours" class="small muted">Choose a rental to see the included hours.</p></div>
+<div class="field"><label for="notes">Notes / special requests (optional)</label><textarea id="notes" rows="4" maxlength="3000" aria-describedby="notes-help"></textarea><p class="muted small" id="notes-help">Any nonempty note requires a final admin quotation. We still show the known subtotal. Payment is unavailable until the final quotation is ready. The three-hour hold applies while waiting.</p></div>
 </section>
-
+<section class="wizard-panel card" data-step="2" aria-labelledby="step-addons-title" hidden><h2 id="step-addons-title" tabindex="-1">3. Customize your setup</h2><p>Paid extras are optional. Every choice shows its additional charge.</p>
+<div class="addon-choice card" id="ball-colors-section" hidden><h3>Ball colors <span class="price-chip">+₱0 — included</span></h3><p>Included for rentals that contain a ball pit/balls. Choose your preferred ball color; there is no quantity charge.</p><div class="field"><label for="ball-color">Ball color *</label><select id="ball-color"><option value="">Choose a color</option></select></div></div>
+<div class="addon-choice card"><img src="../assets/photos/balloon-arch-outdoor-lounge.jpg" class="addon-photo" alt="Illustrative balloon arch setup"><label class="addon-check"><input type="checkbox" id="arch-selected"> Balloon arch <span class="price-chip" id="arch-price"></span></label><div id="arch-fields" hidden><div class="grid-two"><div class="field"><label for="arch-quantity">Number of arches *</label><input id="arch-quantity" type="number" min="1" max="20" step="1" value="1" disabled></div><div class="field"><label for="arch-color-count">How many colors? *</label><select id="arch-color-count" disabled><option value="1">1 color — included</option><option value="2">2 colors — included</option><option value="3">3 colors — included</option></select></div></div><div class="grid-three" id="arch-color-fields"></div><p class="muted small">Choose 1–3 different colors. The price depends on the number of arches, not the number of colors.</p></div></div>
+<div class="addon-choice card"><img src="../assets/photos/gold-arch-backdrop.jpg" class="addon-photo" alt="Illustrative event backdrop"><label class="addon-check"><input type="checkbox" id="backdrop-selected"> Backdrop <span class="price-chip" id="backdrop-price"></span></label><div id="backdrop-fields" hidden><div class="field"><label for="backdrop-event">Event type *</label><select id="backdrop-event" disabled><option value="">Choose an event</option></select></div><div class="field" id="other-event-field" hidden><label for="backdrop-other">Describe the event *</label><input id="backdrop-other" minlength="2" maxlength="100" disabled></div><p class="muted small">All event types, including Other, use the same fee.</p></div></div>
+</section>
+<section class="wizard-panel card" data-step="3" aria-labelledby="step-review-title" hidden><h2 id="step-review-title" tabindex="-1">4. Review your booking</h2><div id="booking-review"></div><section class="review-pricing" aria-labelledby="price-heading"><h3 id="price-heading">Price breakdown</h3><div id="wizard-price" aria-live="polite"></div><p class="small muted">Delivery and selected extras are included. There is no charge based on the number of children.</p></section><div class="hold-info"><h3>Three-hour reservation hold</h3><p>Submission holds the date for three hours, including time awaiting a quotation. Confirmed bookings are protected from hold expiry.</p></div><label class="checkbox-line"><input type="checkbox" id="reservation-fee" required> I understand that a 50% deposit is required, payment references need verification, and my submitted booking holds the date for three hours.</label><p class="small muted">Your date immediately becomes unavailable to other customers after submission. A reference number is not proof of verified payment.</p></section>
+<div class="wizard-actions"><button type="button" id="wizard-back" class="btn btn-outline" hidden>Back</button><button type="button" id="wizard-next" class="btn btn-dark">Continue</button><button type="submit" id="wizard-submit" class="btn btn-book" hidden>Submit booking</button><button type="button" id="wizard-inquire" class="btn btn-outline" hidden>Send inquiry without reserving</button></div>
+<p id="booking-message" role="status" aria-live="polite"></p></form>
+<div id="booking-success" class="card" hidden></div>
+</div></section>
 <section class="cta-band">
   <h2>Ready to add a little more bounce?</h2>
   <p>Check your date, pick a package and reserve with a 50% down payment.</p>
@@ -107,15 +70,9 @@
     <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
     <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
     <div class="social-row">
-    <a href="" class="social" aria-label="Instagram" target="_blank" rel="noopener">
-      <img src="../assets/logo/instagram.png" alt="Instagram">
-    </a>
-    <a href="" class="social" aria-label="Facebook" target="_blank" rel="noopener">
-      <img src="../assets/logo/facebook.png" alt="Facebook">
-    </a>
-    <a href="" class="social" aria-label="TikTok" target="_blank" rel="noopener">
-      <img src="../assets/logo/tiktok.png" alt="TikTok">
-    </a>
+    
+    
+    
   </div>
   </div>
   <div class="footer-col">
@@ -148,6 +105,6 @@
   </div>
 </footer>
 
-<script src="notify.js"></script><script src="site.js"></script><script src="catalog-tools.js"></script>
+<script src="notify.js"></script><script src="site.js"></script><script src="catalog-tools.js"></script><script src="hold-timer.js"></script><script src="booking-wizard.js"></script>
 </body>
 </html>

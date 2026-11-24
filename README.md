@@ -10,7 +10,6 @@ A customer booking website and integrated staff administration system for an inf
 - **Repository:** https://github.com/prncessann/BounceBash
 - **Application version:** 1.2.1
 - **Current scope:** Locally operated school/demo system. Live deployment, real email and verified commercial payment instructions remain pending.
-- **Live website:** Not yet verified; add the actual tested public URL after deployment.
 
 ## Project overview
 
@@ -24,11 +23,11 @@ The role assignments below follow the group's Documentation tab. Assignments des
 
 | Team member | Assigned role(s) |
 | --- | --- |
-| Delos Reyes, Princess Ann A. | Project Manager / Team Lead; Backend Developer |
-| Baniqued, Hazel D. | Frontend Developer |
-| Cal, John Erick S. | Backend Developer |
+| Delos Reyes, Princess Ann A. | Project Manager / Developer |
+| Baniqued, Hazel D. | Developer |
+| Cal, John Erick S. | Developer |
 | Diaz, Ashley P. | UI/UX Designer; QA / Tester |
-| Suarez, Allyson S. | Frontend Developer |
+| Suarez, Allyson S. | Developer |
 
 The team lead coordinates tasks, progress and submission evidence. UI/UX covers layouts and visual consistency. Frontend work covers responsive pages and API interactions. Backend work covers APIs, persistence, access rules and booking/payment logic. QA covers workflows, validation, responsiveness and regression checks.
 

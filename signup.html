@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign up – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <div class="header-actions">
+    <a href="login.html" class="auth-link">Log in</a>
+  </div>
+</header>
+
+<section class="auth-section">
+  <div class="card auth-card">
+    <p class="eyebrow center">Join us</p>
+    <h1 class="center">Create account</h1>
+    <form id="signup-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" minlength="8" required>
+      </div>
+      <button type="submit" class="btn btn-book btn-block">Sign up</button>
+      <p id="signup-message" class="small mt-12" role="status"></p>
+    </form>
+    <p class="switch">May account ka na? <a href="login.html">Log in</a></p>
+  </div>
+</section>
+<script src="site.js"></script><script src="catalog-tools.js"></script>
+</body>
+</html>

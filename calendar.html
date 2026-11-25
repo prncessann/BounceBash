@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Availability Calendar – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Featured</a>
+    <a href="calendar.html" class="active">Calendar</a>
+  </nav>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
+</header>
+
+<section class="page-header">
+  <h1>Availability Calendar</h1>
+  <p class="lead">Showing availability for your chosen style. Pick a date, then continue to the booking form.</p>
+</section>
+<section class="cal-layout pt-40" id="availability-calendar">
+  <div class="card">
+    <div class="calendar-header">
+      <button type="button" class="btn-icon" id="calendar-previous" aria-label="Previous month">&lt;</button>
+      <strong id="calendar-month">Loading...</strong>
+      <button type="button" class="btn-icon" id="calendar-next" aria-label="Next month">&gt;</button>
+    </div>
+    <table class="calendar">
+      <thead><tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>
+      <tbody id="availability-days"></tbody>
+    </table>
+    <div class="legend">
+      <span><span class="dot available"></span> Available</span>
+      <span><span class="dot pending"></span> Unavailable</span>
+      <span><span class="dot booked"></span> Unavailable</span>
+    </div>
+    <p id="calendar-message" class="muted small mt-12" role="status"></p>
+    <p class="muted small mt-12">Availability shown here reflects customer requests recorded by this site. Final availability is confirmed by our team.</p>
+  </div>
+  <div class="cal-side">
+    <div class="style-chip">
+      <span class="swatch-thumb"></span>
+      <div><p class="small muted m-0">Availability</p><strong id="availability-style">All rentals and styles</strong></div>
+      
+    </div>
+    <div class="selected-card">
+      <p class="eyebrow eyebrow eyebrow-gold">Selected date</p>
+      <h2 id="selected-date-label">Pick a date</h2>
+      <p id="selected-date-status" class="mt-12" role="status">Choose a date on the calendar to check it.</p>
+      <a id="book-selected-date" href="booking.html" class="btn btn-gold btn-block" hidden>Book This Date</a>
+    </div>
+    <div class="card">
+      <h3>Good to know</h3>
+      <ul class="good-list">
+        <li>A 50% reservation fee secures your date.</li>
+        <li>Delivery and setup are included in every package.</li>
+        <li>Add-ons are selected in the booking form.</li>
+        <li>Need a date that looks full? Message us and we will check.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <h2>Ready to add a little more bounce?</h2>
+  <p>Check your date, pick a package and reserve with a 50% down payment.</p>
+  <div class="button-row center">
+    <a href="booking.html" class="btn btn-gold">Book Now</a>
+    <a href="calendar.html" class="btn btn-light">Check Availability</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
+    <div class="social-row">
+    
+    
+    
+  </div>
+  </div>
+  <div class="footer-col">
+    <h4>Explore</h4>
+    <a href="index.html">Home</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Blog</a>
+    <a href="calendar.html">Calendar</a>
+  </div>
+  <div class="footer-col">
+    <h4>Help</h4>
+    <a href="booking.html">Booking / Inquiry</a>
+    <a href="calendar.html">Check Availability</a>
+    <a href="faq.html">FAQ</a>
+    <a href="feedback.html">Testimonials</a>
+    <a href="index.html#about">About Us</a>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <!-- sample number, replace with real contact -->
+    <p>+63 917 456 768</p>
+    <p>hello@bouncebashph.com</p>
+    <p>Metro Manila, PH</p>
+  </div>
+  <div class="footer-bottom">
+    <p>(c) 2026 Bounce Bash PH. All rights reserved.</p>
+    <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+  </div>
+</footer>
+
+<script src="site.js"></script><script src="catalog-tools.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html" class="active">Gallery</a>
+    <a href="blog.html">Featured</a>
+    <a href="calendar.html">Calendar</a>
+  </nav>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
+</header>
+
+<section class="page-header">
+  <p class="eyebrow">Previous events</p>
+  <h1>Gallery</h1>
+  <p class="lead">A look at our previous inflatable set-ups and events. Real parties, real smiles.</p>
+</section>
+<div class="gallery-filters">
+  <button type="button" class="btn btn-dark" data-filter="all">All</button>
+  <button type="button" class="btn btn-outline" data-filter="dry">Dry Zone</button>
+  <button type="button" class="btn btn-outline" data-filter="splash">Splash Zone</button>
+  <button type="button" class="btn btn-outline" data-filter="ball">Ball Pit</button>
+  <button type="button" class="btn btn-outline" data-filter="luxe">The Luxe Bash</button>
+</div>
+<section class="gallery-grid pt-12" id="gallery-grid">
+  <a href="../assets/photos/child-playing-cream-bounce-house.jpg" data-cat="dry"><img src="../assets/photos/child-playing-cream-bounce-house.jpg" alt="Child playing in a cream bounce house" loading="lazy"></a>
+  <a href="../assets/photos/gold-arch-backdrop.jpg" data-cat="luxe"><img src="../assets/photos/gold-arch-backdrop.jpg" alt="Gold arch with balloons and backdrop" class="tall" loading="lazy"></a>
+  <a href="../assets/photos/bounce-house-balloon-arch-ballpit.jpg" data-cat="dry ball luxe"><img src="../assets/photos/bounce-house-balloon-arch-ballpit.jpg" alt="Bounce house with balloon arch and ball pit" loading="lazy"></a>
+  <a href="../assets/photos/balloon-arch-outdoor-lounge.jpg" data-cat="luxe"><img src="../assets/photos/balloon-arch-outdoor-lounge.jpg" alt="Balloon arch over a lounge seating area" loading="lazy"></a>
+  <a href="../assets/photos/bounce-house-garden-kids.jpg" data-cat="dry"><img src="../assets/photos/bounce-house-garden-kids.jpg" alt="Toddler in a bounce house at an outdoor party" loading="lazy"></a>
+  <a href="../assets/photos/kids-in-ball-pit-pastel.jpg" data-cat="ball"><img src="../assets/photos/kids-in-ball-pit-pastel.jpg" alt="Children in a ball pit with pink and white balls" loading="lazy"></a>
+  <a href="../assets/photos/balloon-garland-sage.jpg" data-cat="luxe"><img src="../assets/photos/balloon-garland-sage.jpg" alt="Balloon garland in sage, cream and gold" loading="lazy"></a>
+  <a href="../assets/photos/kids-splash-slide-palm-trees.jpg" data-cat="splash"><img src="../assets/photos/kids-splash-slide-palm-trees.jpg" alt="Kids on a splash slide with palm trees" loading="lazy"></a>
+  <a href="../assets/photos/styled-cake-table-dried-florals.jpg" data-cat="luxe"><img src="../assets/photos/styled-cake-table-dried-florals.jpg" alt="Styled cake table with dried florals" loading="lazy"></a>
+  <a href="../assets/photos/classic-white-castle-balloon-garland.jpg" data-cat="dry luxe"><img src="../assets/photos/classic-white-castle-balloon-garland.jpg" alt="White castle bounce house with sage and peach balloon garland" loading="lazy"></a>
+  <a href="../assets/photos/dry-zone-cream-slide-playground.jpg" data-cat="dry"><img src="../assets/photos/dry-zone-cream-slide-playground.jpg" alt="Cream inflatable playground with slide, climbing wall and tunnel" loading="lazy"></a>
+  <a href="../assets/photos/rainbow-racer-slide-colorful.jpg" data-cat="dry"><img src="../assets/photos/rainbow-racer-slide-colorful.jpg" alt="Colorful racing-themed slide combo on the lawn" loading="lazy"></a>
+  <a href="../assets/photos/carnival-pop-castle-ball-pit.jpg" data-cat="dry ball"><img src="../assets/photos/carnival-pop-castle-ball-pit.jpg" alt="Colorful carnival castle with tunnels and a ball pit" loading="lazy"></a>
+  <a href="../assets/photos/castle-bounce-cake-table.jpg" data-cat="dry luxe"><img src="../assets/photos/castle-bounce-cake-table.jpg" alt="Castle bounce house with a styled cake table" loading="lazy"></a>
+  <a href="../assets/photos/splash-slide-kids-sliding.jpg" data-cat="splash"><img src="../assets/photos/splash-slide-kids-sliding.jpg" alt="Girl sliding down a white and aqua water slide" loading="lazy"></a>
+  <a href="../assets/photos/splash-pool-kids-tunnel.jpg" data-cat="splash"><img src="../assets/photos/splash-pool-kids-tunnel.jpg" alt="Kids playing in the pool beside a splash tunnel" loading="lazy"></a>
+  <a href="../assets/photos/splash-climbing-wall-palms.jpg" data-cat="splash"><img src="../assets/photos/splash-climbing-wall-palms.jpg" alt="Boy climbing the water playground wall under palm trees" loading="lazy"></a>
+  <a href="../assets/photos/ballpit-toddler-girl-balloons.jpg" data-cat="ball"><img src="../assets/photos/ballpit-toddler-girl-balloons.jpg" alt="Toddler girl in a pastel ball pit with balloons behind her" loading="lazy"></a>
+  <a href="../assets/photos/ballpit-toddler-boy-playing.jpg" data-cat="ball"><img src="../assets/photos/ballpit-toddler-boy-playing.jpg" alt="Toddler boy playing in a blush and cream ball pit" loading="lazy"></a>
+  <a href="../assets/photos/ballpit-pastel-balls-closeup.jpg" data-cat="ball"><img src="../assets/photos/ballpit-pastel-balls-closeup.jpg" alt="Close-up of blush, cream and champagne ball pit balls" loading="lazy"></a>
+</section>
+<p class="gallery-empty" id="gallery-empty" hidden>More photos for this category are coming soon.</p>
+<div class="load-more"><button type="button" class="btn btn-outline" id="load-more">Load more</button></div>
+
+<section class="cta-band">
+  <h2>Ready to add a little more bounce?</h2>
+  <p>Check your date, pick a package and reserve with a 50% down payment.</p>
+  <div class="button-row center">
+    <a href="booking.html" class="btn btn-gold">Book Now</a>
+    <a href="calendar.html" class="btn btn-light">Check Availability</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
+    <div class="social-row">
+    
+    
+    
+  </div>
+  </div>
+  <div class="footer-col">
+    <h4>Explore</h4>
+    <a href="index.html">Home</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Blog</a>
+    <a href="calendar.html">Calendar</a>
+  </div>
+  <div class="footer-col">
+    <h4>Help</h4>
+    <a href="booking.html">Booking / Inquiry</a>
+    <a href="calendar.html">Check Availability</a>
+    <a href="faq.html">FAQ</a>
+    <a href="feedback.html">Testimonials</a>
+    <a href="index.html#about">About Us</a>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <!-- sample number, replace with real contact -->
+    <p>+63 917 456 768</p>
+    <p>hello@bouncebashph.com</p>
+    <p>Metro Manila, PH</p>
+  </div>
+  <div class="footer-bottom">
+    <p>(c) 2026 Bounce Bash PH. All rights reserved.</p>
+    <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+  </div>
+</footer>
+
+<script src="gallery-interactions.js"></script>
+<script src="site.js"></script><script src="catalog-tools.js"></script>
+</body>
+</html>

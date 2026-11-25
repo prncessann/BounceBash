@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Your Party – Bounce Bash PH</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Featured</a>
+    <a href="calendar.html">Calendar</a>
+  </nav>
+  <div class="header-actions">
+    <a href="index.html#login" class="auth-link">Log in</a>
+    <a href="index.html#signup" class="auth-link">Sign up</a>
+    <a href="profile.html" class="auth-link">Profile</a>
+  </div>
+</header>
+
+<section class="page-header wizard-page-header"><p class="eyebrow">Your celebration, step by step</p><h1>Book Your Party</h1><p class="lead">Choose your rental, customize your setup, and review the full price before submitting.</p></section>
+<section class="wizard-layout" id="booking-app">
+<div class="wizard-main">
+<div id="booking-auth" class="card auth-notice" hidden><h2>Sign in to finish booking</h2><p>Your booking is saved to your profile. You can browse rentals first; sign in before continuing to event details.</p><a class="btn btn-dark" id="booking-sign-in" href="login.html?next=booking.html">Sign in</a><a class="btn btn-outline" href="signup.html?next=booking.html">Create account</a></div>
+<div id="wizard-loading" class="card" role="status">Loading rental options...</div>
+<ol class="wizard-steps" id="wizard-steps" aria-label="Booking progress" hidden><li>Choose rental</li><li>Event details</li><li>Add-ons</li><li>Review</li></ol>
+<form id="booking-form" data-wizard="true" novalidate hidden>
+<section class="wizard-panel card" data-step="0" aria-labelledby="step-rental-title"><h2 id="step-rental-title" tabindex="-1">1. Choose your rental</h2><p>Select the actual inflatable from a photo, then choose its supported style/color. Photos illustrate the available rental designs.</p>
+<div class="field"><label for="zone-filter">Filter by zone</label><select id="zone-filter"><option value="">All zones</option></select></div>
+<fieldset class="rental-choices"><legend>Rental item <span aria-hidden="true">*</span></legend><div class="rental-grid" id="rental-grid"></div><p id="rental-error" class="field-error" hidden></p></fieldset>
+<div class="field"><label for="rental-variant">Style/color variant <span aria-hidden="true">*</span></label><select id="rental-variant" required aria-describedby="variant-hint"><option value="">Choose a rental first</option></select><p class="muted small" id="variant-hint">Photos illustrate the rental; they do not change with every color choice.</p></div>
+<div class="sample-swatches" aria-label="Color examples"><span><i style="background:#fff"></i>White</span><span><i style="background:#fff2d6"></i>Cream</span><span><i style="background:#c9dac1"></i>Sage</span><span><i style="background:#e7d0ef"></i>Lavender</span><span><i style="background:#ffd7df"></i>Blush</span></div><p class="small muted">Synthetic color examples; actual material may vary.</p><div id="rental-safety" class="muted small"></div>
+</section>
+<section class="wizard-panel card" data-step="1" aria-labelledby="step-details-title" hidden><h2 id="step-details-title" tabindex="-1">2. Event details</h2>
+<div class="grid-two"><div class="field"><label for="name">Full name *</label><input id="name" name="name" autocomplete="name" minlength="2" maxlength="120" required></div><div class="field"><label for="contact">Contact number *</label><input id="contact" name="contact" type="tel" autocomplete="tel" maxlength="30" required></div>
+<div class="field"><label for="event-date">Event date *</label><input id="event-date" type="date" required></div><div class="field"><label for="event-time">Event time (Philippine time) *</label><input id="event-time" type="time" required></div></div><p id="date-status" role="status" class="small"></p>
+<div class="field"><label for="city-id">City/Municipality (NCR) *</label><select id="city-id" required><option value="">Choose your city/municipality</option></select></div>
+<div class="field"><label for="venue">Full venue address *</label><textarea id="venue" name="venue" rows="3" minlength="2" maxlength="1000" autocomplete="street-address" required></textarea></div>
+<div class="field"><label for="extra-hours">Additional rental hours</label><select id="extra-hours"></select><p id="included-hours" class="small muted">Choose a rental to see the included hours.</p></div>
+<div class="field"><label for="notes">Notes / special requests (optional)</label><textarea id="notes" rows="4" maxlength="3000" aria-describedby="notes-help"></textarea><p class="muted small" id="notes-help">Any nonempty note requires a final admin quotation. We still show the known subtotal. Payment is unavailable until the final quotation is ready. The three-hour hold applies while waiting.</p></div>
+</section>
+<section class="wizard-panel card" data-step="2" aria-labelledby="step-addons-title" hidden><h2 id="step-addons-title" tabindex="-1">3. Customize your setup</h2><p>Paid extras are optional. Every choice shows its additional charge.</p>
+<div class="addon-choice card" id="ball-colors-section" hidden><h3>Ball colors <span class="price-chip">+₱0 — included</span></h3><p>Included for rentals that contain a ball pit/balls. Choose your preferred ball color; there is no quantity charge.</p><div class="field"><label for="ball-color">Ball color *</label><select id="ball-color"><option value="">Choose a color</option></select></div></div>
+<div class="addon-choice card"><img src="../assets/photos/balloon-arch-outdoor-lounge.jpg" class="addon-photo" alt="Illustrative balloon arch setup"><label class="addon-check"><input type="checkbox" id="arch-selected"> Balloon arch <span class="price-chip" id="arch-price"></span></label><div id="arch-fields" hidden><div class="grid-two"><div class="field"><label for="arch-quantity">Number of arches *</label><input id="arch-quantity" type="number" min="1" max="20" step="1" value="1" disabled></div><div class="field"><label for="arch-color-count">How many colors? *</label><select id="arch-color-count" disabled><option value="1">1 color — included</option><option value="2">2 colors — included</option><option value="3">3 colors — included</option></select></div></div><div class="grid-three" id="arch-color-fields"></div><p class="muted small">Choose 1–3 different colors. The price depends on the number of arches, not the number of colors.</p></div></div>
+<div class="addon-choice card"><img src="../assets/photos/gold-arch-backdrop.jpg" class="addon-photo" alt="Illustrative event backdrop"><label class="addon-check"><input type="checkbox" id="backdrop-selected"> Backdrop <span class="price-chip" id="backdrop-price"></span></label><div id="backdrop-fields" hidden><div class="field"><label for="backdrop-event">Event type *</label><select id="backdrop-event" disabled><option value="">Choose an event</option></select></div><div class="field" id="other-event-field" hidden><label for="backdrop-other">Describe the event *</label><input id="backdrop-other" minlength="2" maxlength="100" disabled></div><p class="muted small">All event types, including Other, use the same fee.</p></div></div>
+</section>
+<section class="wizard-panel card" data-step="3" aria-labelledby="step-review-title" hidden><h2 id="step-review-title" tabindex="-1">4. Review your booking</h2><div id="booking-review"></div><section class="review-pricing" aria-labelledby="price-heading"><h3 id="price-heading">Price breakdown</h3><div id="wizard-price" aria-live="polite"></div><p class="small muted">Delivery and selected extras are included. There is no charge based on the number of children.</p></section><div class="hold-info"><h3>Three-hour reservation hold</h3><p>Submission holds the date for three hours, including time awaiting a quotation. Confirmed bookings are protected from hold expiry.</p></div><label class="checkbox-line"><input type="checkbox" id="reservation-fee" required> I understand that a 50% deposit is required, payment references need verification, and my submitted booking holds the date for three hours.</label><p class="small muted">Your date immediately becomes unavailable to other customers after submission. A reference number is not proof of verified payment.</p></section>
+<div class="wizard-actions"><button type="button" id="wizard-back" class="btn btn-outline" hidden>Back</button><button type="button" id="wizard-next" class="btn btn-dark">Continue</button><button type="submit" id="wizard-submit" class="btn btn-book" hidden>Submit booking</button><button type="button" id="wizard-inquire" class="btn btn-outline" hidden>Send inquiry without reserving</button></div>
+<p id="booking-message" role="status" aria-live="polite"></p></form>
+<div id="booking-success" class="card" hidden></div>
+</div></section>
+<section class="cta-band">
+  <h2>Ready to add a little more bounce?</h2>
+  <p>Check your date, pick a package and reserve with a 50% down payment.</p>
+  <div class="button-row center">
+    <a href="booking.html" class="btn btn-gold">Book Now</a>
+    <a href="calendar.html" class="btn btn-light">Check Availability</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-brand">
+    <img src="../assets/logo/logo-full.png" alt="Bounce Bash PH">
+    <p>Safe, elegant and hassle-free inflatable play experiences for every Filipino celebration.</p>
+    <div class="social-row">
+    
+    
+    
+  </div>
+  </div>
+  <div class="footer-col">
+    <h4>Explore</h4>
+    <a href="index.html">Home</a>
+    <a href="packages.html">Packages</a>
+    <a href="add-ons.html">Add-ons</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="blog.html">Blog</a>
+    <a href="calendar.html">Calendar</a>
+  </div>
+  <div class="footer-col">
+    <h4>Help</h4>
+    <a href="booking.html">Booking / Inquiry</a>
+    <a href="calendar.html">Check Availability</a>
+    <a href="faq.html">FAQ</a>
+    <a href="feedback.html">Testimonials</a>
+    <a href="index.html#about">About Us</a>
+  </div>
+  <div class="footer-col">
+    <h4>Contact</h4>
+    <!-- sample number, replace with real contact -->
+    <p>+63 917 456 768</p>
+    <p>hello@bouncebashph.com</p>
+    <p>Metro Manila, PH</p>
+  </div>
+  <div class="footer-bottom">
+    <p>(c) 2026 Bounce Bash PH. All rights reserved.</p>
+    <p><a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+  </div>
+</footer>
+
+<script src="notify.js"></script><script src="site.js"></script><script src="catalog-tools.js"></script><script src="hold-timer.js"></script><script src="booking-wizard.js"></script>
+</body>
+</html>

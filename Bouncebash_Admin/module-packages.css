@@ -153,3 +153,29 @@ body.rpt[data-design-scope="packages"] .mod-package-add .admin-form>.fld {grid-c
 body.rpt[data-design-scope="packages"] .mod-package-add .admin-form textarea {min-height:115px;}
 @media(max-width:1050px){body.rpt[data-design-scope="packages"] #admin-content{grid-template-columns:1fr;}}
 @media(max-width:540px){body.rpt[data-design-scope="packages"] .mod-package-dialog .admin-form{grid-template-columns:1fr;}body.rpt[data-design-scope="packages"] .mod-package-dialog .admin-form>button[type="submit"]{grid-column:1;width:100%;}body.rpt[data-design-scope="packages"] .mod-package-dialog .admin-form>.fld:has(textarea),body.rpt[data-design-scope="packages"] .mod-package-dialog .mod-package-group-title{grid-column:1;}}
+
+/* Fix 7: compact, aligned availability and pricing actions. */
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit{width:min(730px,calc(100vw - 26px));}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;
+  column-gap:14px;row-gap:10px;margin:0;padding:0;
+}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form+.admin-form{margin-top:14px!important;padding-top:15px!important;border-top:1px solid #e4eaf2;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit .mod-package-group-title{grid-column:1/-1;margin:0 0 2px!important;padding:0;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit .fld{margin:0!important;gap:5px;min-height:0;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit textarea.inp{min-height:70px!important;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>.fld:has(textarea){grid-column:1/-1;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>.fld:has(input[type="checkbox"]){grid-column:1!important;display:flex;flex-direction:row;align-items:center;gap:10px;min-height:40px;padding:0;margin:0!important;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>.fld input[type="checkbox"]{appearance:auto;width:18px!important;min-width:18px!important;height:18px!important;min-height:18px!important;margin:0 0 0 8px;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>button[type="submit"]{grid-column:2!important;grid-row:auto;justify-self:end;margin:0!important;min-width:160px;align-self:center;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form>.mu[role="status"]{grid-column:1/-1;margin:0!important;font-size:12px;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:nth-of-type(2)>.fld:has(textarea){grid-column:1/-1;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:nth-of-type(2)>button[type="submit"]{grid-column:1/-1;justify-self:end;margin:0!important;min-width:180px;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>.mu[role="status"]{margin:0;}
+body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit .admin-form>.inp{min-width:0;}
+@media(max-width:600px){
+ body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form{grid-template-columns:1fr!important;gap:10px;}
+ body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>.fld:has(input[type="checkbox"]){grid-column:1!important;}
+ body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:first-of-type>button[type="submit"]{grid-column:1!important;justify-self:stretch;}
+ body.rpt[data-design-scope="packages"] .mod-package-dialog.mod-package-edit>form.admin-form:nth-of-type(2)>button[type="submit"]{grid-column:1!important;justify-self:stretch;}
+}

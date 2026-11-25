@@ -141,3 +141,19 @@ body.rpt[data-design-scope="blog"] .mod-overview {margin-bottom:19px;}
 body.rpt[data-design-scope="blog"] :is(.mod-summary-card,.card) {min-width:0;}
 body.rpt[data-design-scope="blog"] .admin-dialog pre {white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f9fc;border:1px solid #e3ebf4;border-radius:8px;padding:12px;}
 body.rpt[data-design-scope="blog"] #admin-content td:first-child {font-weight:600;}
+
+/* Fix 7: tighter article and review editing fields with more deliberate rhythm. */
+body.rpt[data-design-scope="blog"] .mod-overview{margin:4px 0 12px!important;}
+body.rpt[data-design-scope="blog"] #admin-content{row-gap:12px!important;}
+body.rpt[data-design-scope="blog"] #admin-content>.card{padding:17px 19px;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog[open]{padding:20px 23px;width:min(730px,calc(100vw - 24px));}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog>h2{padding:0 75px 13px 0;margin:0 0 12px;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog>.mu[role="status"]{margin:0;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px!important;align-items:start;margin:5px 0 0;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form>.fld{display:flex;flex-direction:column;gap:5px;margin:0!important;min-height:0;line-height:1.35;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form>.fld:has(textarea){grid-column:1/-1;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form textarea.inp{min-height:72px!important;max-height:210px;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form .inp{min-height:40px;padding:8px 11px;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form>button[type="submit"]{grid-column:1/-1;justify-self:end;margin:1px 0 0!important;min-width:150px;}
+body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form>.mu[role="status"]{grid-column:1/-1;text-align:right;margin:0;}
+@media(max-width:640px){body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form{grid-template-columns:1fr!important;}body.rpt[data-design-scope="blog"] dialog.admin-dialog .admin-form>button[type="submit"]{grid-column:1!important;justify-self:stretch;} }

@@ -144,3 +144,30 @@ body.rpt[data-design-scope="settings"] #admin-content>.card{min-width:0;}
 body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form {grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;}
 body.rpt[data-design-scope="settings"] .mod-settings-group {grid-column:1/-1;border-top:1px solid #e1e8f1;padding:17px 0 0;margin:12px 0 0;font-size:15px!important;font-weight:750;letter-spacing:0;}
 body.rpt[data-design-scope="settings"] #admin-content .mod-notice-settings .admin-form {grid-template-columns:repeat(auto-fit,minmax(210px,1fr));}
+
+/* Fix 7: compact Settings form, accessible toggles, no Bank Transfer section. */
+body.rpt[data-design-scope="settings"] .mod-overview{margin:0 0 12px!important;}
+body.rpt[data-design-scope="settings"] #admin-content{gap:12px!important;}
+body.rpt[data-design-scope="settings"] #admin-content>.card{padding:17px 20px;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:start;gap:10px 13px!important;margin:10px 0 0!important;
+}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.fld{margin:0!important;display:flex;flex-direction:column;gap:5px;line-height:1.35;min-height:0;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form .inp{min-height:40px;padding:8px 10px;max-width:100%;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.fld:has(textarea){grid-column:span 2;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form textarea.inp{min-height:74px!important;resize:vertical;}
+body.rpt[data-design-scope="settings"] .mod-business-settings .mod-settings-group{grid-column:1/-1;margin:7px 0 1px!important;padding:12px 0 0!important;border-top:1px solid #e4ebf3;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.fld:has(input[type="checkbox"]){display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;min-height:40px;padding:0;margin:0!important;}
+body.rpt[data-design-scope="settings"] .mod-business-settings input[type="checkbox"],body.rpt[data-design-scope="settings"] .mod-notice-settings input[type="checkbox"]{appearance:auto!important;width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;max-width:18px!important;max-height:18px!important;margin:0;accent-color:#213e69;flex:none;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.bb-bank-removal-note{grid-column:1/-1;line-height:1.45;font-size:12px;color:#5f6c80;background:#f6f9fc;border:1px solid #e4ebf3;border-radius:8px;padding:10px;margin:0;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>button[type="submit"]{grid-column:1/-1;justify-self:end;min-width:160px;margin:0!important;}
+body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.mu[role="status"]{grid-column:1/-1;margin:0;}
+body.rpt[data-design-scope="settings"] .mod-notice-settings form.admin-form{gap:9px 13px!important;align-items:center;}
+body.rpt[data-design-scope="settings"] .mod-notice-settings .fld:has(input[type="checkbox"]){margin:0!important;min-height:36px;}
+@media(max-width:1280px){body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:830px){body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:540px){
+ body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form{grid-template-columns:1fr!important;}
+ body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>.fld:has(textarea){grid-column:1!important;}
+ body.rpt[data-design-scope="settings"] .mod-business-settings form.admin-form>button[type="submit"]{justify-self:stretch;}
+}

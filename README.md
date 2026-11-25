@@ -2,17 +2,17 @@
 
 ## Project Overview
 
-BounceBash is a party-rental website for inflatable play equipment, ball pits, and event add-ons. Group 7, BSIS 3A, developed it for CC312-M Website Development at the Technological University of the Philippines – Manila under Prof. Mary Joy Viñas.
+BounceBash is a party-rental website for inflatables, ball pits, and event add-ons. Group 7, BSIS 3A, developed it for CC312-M Website Development at the Technological University of the Philippines – Manila under Prof. Mary Joy Viñas.
 
 ## Purpose
 
-The site introduces BounceBash rentals and lets visitors explore event photos and answers to common questions. It also includes customer booking and staff interface previews.
+The site introduces BounceBash, shows examples of party setups, and answers common rental questions. It also includes customer booking and staff interface previews.
 
 ## Team Members & Roles
 
-| Team member | Original project role |
+| Team member | Role |
 | --- | --- |
-| Delos Reyes, Princess Ann A. | Project Manager|
+| Delos Reyes, Princess Ann A. | Project Manager |
 | Baniqued, Hazel D. | Developer |
 | Cal, John Erick S. | Developer |
 | Diaz, Ashley P. | UI/UX Designer and QA / Tester |
@@ -23,48 +23,89 @@ The site introduces BounceBash rentals and lets visitors explore event photos an
 - HTML, CSS, and vanilla JavaScript
 - Visual Studio Code and Live Server for local preview
 - Git and GitHub for version control
-- GitHub Pages as the static hosting target
+- GitHub Pages for static hosting
+- Node.js and Express for the local API and SQLite for local storage
 
 ## Site Structure
 
 ```text
 BounceBash/
-├── index.html                 Customer site entry point
-├── Bouncebash_CS/             Customer pages, style.css, site.js, and page scripts
-├── Bouncebash_Admin/          Staff pages, styles, scripts, and branding
+├── index.html              Home page with About and Contact sections
+├── rentals.html            Rental information
+├── packages.html           Party packages
+├── add-ons.html            Rental add-ons
+├── gallery.html            Event photos
+├── faq.html                Common questions
+├── booking.html            Booking form preview
+├── style.css               Root customer stylesheet
+├── site.js                 Main customer script
+├── js/                     Shared customer page scripts
+├── server.js               Node.js web server and API
+├── backend/                Database access and server-side services
+├── migrations/             PostgreSQL schema migrations
+├── scripts/                Local setup and database utilities
+├── package.json            Node.js dependencies and commands
+├── Bouncebash_CS/          Existing customer page URLs and stylesheet
+├── Bouncebash_Admin/       Staff interface pages
+│   ├── css/                Staff stylesheets
+│   ├── js/                 Staff scripts
+│   └── assets/             Staff branding
 ├── assets/
-│   ├── logo/                  Shared branding and social icons
-│   ├── photos/                Rental and event photos
-│   └── payments/              Payment display images
+│   ├── logo/               Branding and social icons
+│   ├── photos/             Rental and event photos
+│   └── payments/           Payment display images
+├── test/                   Browser-side checks with mocked API responses
+├── CHANGES.md              Earlier release history
 ├── README.md
 └── .gitignore
 ```
 
-The root `index.html` opens `Bouncebash_CS/index.html`. The customer site's main pages include `rentals.html`, `packages.html`, `add-ons.html`, `gallery.html`, `faq.html`, `blog.html`, and `booking.html`. The staff preview starts at `Bouncebash_Admin/login.html`. Pages retain their existing folder paths so relative links to shared images, styles, and scripts resolve on a static host.
+The PDF's example uses separate About, Services, and Contact pages. BounceBash puts About and Contact on the home page and uses Rentals, Packages, and Add-ons for its services. The existing main script is named `site.js`.
 
-The static preview includes the customer site layout, gallery interactions, and FAQ controls. Live catalog data, blog articles, availability, accounts, bookings, payment submissions, feedback, newsletter signup, and staff tools depend on an API and are unavailable in this frontend-only copy.
+The Node.js server connects the customer and staff pages to the database for catalog data, availability, accounts, bookings, and staff operations. GitHub Pages serves the static preview. API-backed actions require the Node.js server.
 
 ## Design Concept
 
-The customer site uses cream and sand backgrounds, mocha text, and gold, blush, and sage accents. Cormorant Garamond is used for headings and Montserrat for body text. Responsive cards and grids organize the pages.
+- **Color scheme.** Cream and sand backgrounds with mocha text and gold, blush, and sage accents.
+- **Typography.** Cormorant Garamond for headings and Montserrat for body text.
+- **Layout.** Responsive cards and grids organize the rental information and photos.
 
 ## Deployment
 
-Open the project root in VS Code and launch `index.html` with Live Server. The static preview runs directly from the source files.
+### Local site with SQLite
 
-For GitHub Pages, publish from the root of the branch containing this structure. Check that the published URL opens the customer home page and loads the shared styles and images. Verification of the live Pages URL for this version is pending. The staff pages use an existing site-root link back to the customer site. On GitHub Pages project URLs, open the customer site from the repository's published root URL.
+From the project folder in PowerShell, use Node.js 22.13 through 24.x and run:
+
+```powershell
+npm.cmd ci
+npm.cmd run setup
+npm.cmd start
+```
+
+Open [the customer site](http://localhost:3000/) or [staff sign-in](http://localhost:3000/Bouncebash_Admin/login.html). On Windows, `START_WINDOWS.bat` runs the same setup and start steps when needed.
+
+SQLite opens `data/bouncebash.sqlite`, creating it if needed. A new local database starts with demo catalog data and uses the private settings in `.env`. To create a staff account, run `node scripts/create-staff.js <email> "<full name>" "<password>"` with a password of at least eight characters.
+
+After setup, run `npm.cmd run seed:demo` to add 24 synthetic historical bookings to local SQLite. In Admin Bookings, search for `DEMO-HIST` or filter for August 25 through November 25, 2026. The command can run again safely and skips dates already occupied by another booking. Git shares the seed script while `data/bouncebash.sqlite` and `.env` stay local.
+
+### Static preview and GitHub Pages
+
+For a static local preview, serve `index.html` with Live Server.
+
+For GitHub Pages, select the branch containing this structure and publish from its root. The root `index.html` is the customer entry point. Existing customer links under `Bouncebash_CS/` also resolve.
 
 - [GitHub repository](https://github.com/prncessann/BounceBash)
+- [Expected GitHub Pages URL](https://prncessann.github.io/BounceBash/) (deployment verification pending)
 
 ## Lessons Learned
 
-Keeping pages and shared assets at their existing relative paths preserves links during static deployment. The cleanup identified which browser interactions run independently and which screens depend on API data.
+Relative paths depend on where a page is served. The root and customer-folder pages share images and scripts while keeping their existing page URLs. Static hosting also makes it important to identify which browser interactions work independently and which forms and views need an API.
 
 ## Timeline
 
-| Phase | Work |
-| --- | --- |
-| Proposal and design | Project scope, wireframes, and visual direction |
-| Development | Customer and staff pages, styling, and browser interactions |
-| Static release preparation | Frontend folder cleanup and README update |
-| Deployment and submission | GitHub Pages verification and screenshots for the printed and digital documentation are pending |
+| Phase | Work | Status |
+| --- | --- | --- |
+| Proposal and design | Scope, wireframes, and visual direction | Completed |
+| Development | Customer and staff pages, styling, and browser interactions | Source files available |
+| Static release preparation | Organize the files and update the README | Completed November 25, 2026 |
+| Deployment and submission | Verify GitHub Pages and capture submission screenshots | Pending |

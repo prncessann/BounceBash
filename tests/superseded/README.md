@@ -1,1 +1,0 @@
-These historical test sources document the former guest-token, child-count, upload/OCR and two-selection contracts. They are retained for reference, and superseded by test/booking.test.js and test/wizard.test.js. They are not part of the current test run. Database migration tests remain active.

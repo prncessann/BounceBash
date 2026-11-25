@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Manage Booking – Bounce Bash PH</title><link rel="stylesheet" href="style.css"></head><body>
-<header class="site-header"><a href="index.html" class="brand"><img src="../assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a><nav class="header-actions"><a href="index.html">Home</a><a href="booking.html">Book a Party</a><a href="profile.html">Profile</a></nav></header>
+<header class="site-header"><a href="index.html" class="brand"><img src="assets/logo/logo-full.png" alt="Bounce Bash PH" class="logo"></a><nav class="header-actions"><a href="index.html">Home</a><a href="booking.html">Book a Party</a><a href="profile.html">Profile</a></nav></header>
 <section class="page-header"><h1>Manage Booking</h1></section><section class="account-layout manage-stack"><p id="tools-message" role="status" aria-live="polite">Loading booking…</p>
 <div id="manage-actions" hidden>
   <div class="card" id="booking-details"></div>
@@ -31,4 +31,4 @@
 
 <form class="card" id="payment-reference-form" hidden><h2>Submit payment reference</h2><p>Get official payment instructions from the team first. This form records a transfer already made; it does not send money. The team must verify each payment.</p><div class="field"><label for="payment-amount">Amount paid (PHP)</label><input id="payment-amount" type="number" min="0.01" step="0.01" max="1000000" required></div><div class="field"><label for="payment-method">Method</label><select id="payment-method" required></select></div><div class="field"><label for="payment-reference">Transaction / receipt reference</label><input type="text" id="payment-reference" minlength="4" maxlength="120" required></div><button class="btn btn-book" type="submit">Submit for verification</button></form><p id="payment-message" class="form-feedback" role="status" aria-live="polite"></p><p id="payment-pending-note" class="small muted" role="status"></p>
 </div>
-</section><script src="notify.js"></script><script src="payment-config.js"></script><script src="hold-timer.js"></script><script defer src="customer-tools.js"></script></body></html>
+</section><script src="js/notify.js"></script><script src="js/payment-config.js"></script><script src="js/hold-timer.js"></script><script defer src="js/customer-tools.js"></script></body></html>

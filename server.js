@@ -1346,6 +1346,8 @@ async function start() {
     etag: true
   };
   app.use('/assets', express.static(path.join(__dirname, 'assets'), publicOptions));
+  app.use('/js', express.static(path.join(__dirname, 'js'), publicOptions));
+  app.get('/site.js', (req, res) => res.sendFile(path.join(__dirname, 'site.js')));
   app.use('/Bouncebash_CS', (req, res, next) => {
     if (!/^\/(?:[a-zA-Z0-9_-]+\.(?:html|css|js|png|jpg|jpeg|svg|webp)|)?$/.test(req.path)) return res.status(404).send('Not found.');
     next();

@@ -8,18 +8,17 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "setup": "node scripts/setup.js",
-    "test": "node scripts/run-tests.js",
+    "seed:demo": "node scripts/seed-demo-bookings.js",
+    "test": "node --test test/site-controls.test.js",
     "operator": "node scripts/operator.js",
     "backup": "node scripts/backup.js",
     "outbox": "node scripts/outbox.js",
-    "test:postgres": "node scripts/test-postgres.js",
-    "build": "node scripts/build-public.js",
     "migrate": "node scripts/migrate.js",
     "migrate:sqlite": "node scripts/migrate-sqlite.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^11.1.2",
+    "better-sqlite3": "12.11.1",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "pg": "^8.16.3"
@@ -31,7 +30,5 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",
     "jsdom": "^26.1.0"
-    
   }
-  
 }

@@ -1,4 +1,5 @@
 ﻿'use strict';
+const catalogScriptUrl = document.currentScript.src;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const featured = document.getElementById('featured-rentals');
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!details[option.name] || !Number.isInteger(option.unit_price_cents)) continue;
         const [description, photo] = details[option.name];
         const rate = '+' + money(option.unit_price_cents) + (option.name === 'Balloon arch' ? ' per arch' : '');
-        grid.append(card(option.name, description, rate, '../assets/photos/' + photo, 'booking.html'));
+        grid.append(card(option.name, description, rate, new URL('../assets/photos/' + photo, catalogScriptUrl).href, 'booking.html'));
       }
     } else {
       for (const model of catalog.models) {

@@ -1,4 +1,5 @@
 'use strict';
+const paymentScriptUrl = document.currentScript.src;
 /* Public payment details shown to booking owners on manage-booking.html.
    These values are NOT secret, but they must be the team's real details.
    GCash is supplied for the demo and its receiving details remain unverified.
@@ -7,7 +8,7 @@ window.BB_PAYMENT_CONFIG = {
   gcash: {
     name: 'Hazel D. Baniqued',
     number: '09128463267',
-    qrImage: '../assets/payments/gcash-qr.jpg'
+    qrImage: new URL('../assets/payments/gcash-qr.jpg', paymentScriptUrl).href
   },
   bank: {
     businessApproved: false,

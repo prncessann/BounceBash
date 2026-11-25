@@ -1,7 +1,0 @@
-{
-  "scope": "Local parallel catalog smoke check, not production capacity",
-  "concurrency": 30,
-  "sqlite_elapsed_ms": 48,
-  "pglite_elapsed_ms": 316,
-  "errors": 0
-}

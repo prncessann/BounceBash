@@ -10,3 +10,27 @@
  }catch{panel.replaceChildren(E('p','mod-sub','Catalog summary unavailable. Existing catalog management remains usable.'));}}
  const obs=new MutationObserver(()=>{obs.disconnect();render().finally(()=>obs.observe(host,{childList:true}));});obs.observe(host,{childList:true});if(host.children.length)render();
 })();
+
+
+/* Package dialogs are decorated on insertion, without replacing API forms. */
+(()=>{
+ const main=document.querySelector('main[data-admin-page="packages"]');if(!main)return;
+ function enhance(dialog){
+  if(!dialog.matches('dialog.admin-dialog')||dialog.dataset.modPackageEnhanced)return;
+  const forms=[...dialog.querySelectorAll(':scope > form.admin-form')];
+  const input=n=>Boolean(dialog.querySelector('[name="'+n+'"]'));
+  const add=input('name')&&input('description')&&!input('zoneId')&&!input('modelId')&&!input('price');
+  const edit=input('modelIds')&&input('price');
+  const other=input('zoneId')||input('modelId');
+  if(!add&&!edit&&!other)return;
+  dialog.dataset.modPackageEnhanced='true';dialog.classList.add('mod-package-dialog',add?'mod-package-add':edit?'mod-package-edit':'mod-package-other');
+  forms.forEach((form,i)=>{
+    const heading=document.createElement('h3');heading.className='mod-package-group-title';
+    heading.textContent=add?'Package details':edit?(i===0?'Availability & description':'Pricing & inclusions'):'Rental details';
+    form.prepend(heading);
+  });
+ }
+ for(const dialog of document.querySelectorAll('dialog.admin-dialog'))enhance(dialog);
+ const obs=new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes){if(node.nodeType===1&&node.matches?.('dialog.admin-dialog'))enhance(node);}});
+ obs.observe(document.body,{childList:true});
+})();
